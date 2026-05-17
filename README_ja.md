@@ -2,7 +2,7 @@
 
 [English](README.md) | [中文](README_zh.md)
 
-Adobe Acrobat風の軽量・高速PDFエディタ。Tauri v2 + React + PDF.js 製。
+軽量・高速PDFエディタ。Tauri v2 + React + PDF.js 製。
 
 ## 競合との比較
 
