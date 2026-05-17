@@ -1,5 +1,7 @@
 # pdforte
 
+[日本語](README_ja.md) | [中文](README_zh.md)
+
 A lightweight, fast PDF editor inspired by Adobe Acrobat — built with Tauri v2, React, and PDF.js.
 
 ## Why pdforte?

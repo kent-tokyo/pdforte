@@ -1,5 +1,7 @@
 # pdforte
 
+[English](README.md) | [日本語](README_ja.md)
+
 仿 Adobe Acrobat 的轻量、高速 PDF 编辑器，基于 Tauri v2 + React + PDF.js 构建。
 
 ## 与竞品的比较
