@@ -1,0 +1,47 @@
+{
+  "toolbar": {
+    "open": "開啟",
+    "save": "儲存",
+    "saveAs": "另存新檔",
+    "undo": "復原",
+    "redo": "取消復原",
+    "tools": {
+      "hand": "Hand",
+      "select": "Select",
+      "textbox": "Text",
+      "highlight": "Highlight",
+      "underline": "Underline",
+      "strikethrough": "Strike",
+      "signature": "Sign",
+      "stamp": "Stamp"
+    },
+    "zoom": { "fitPage": "Fit Page", "fitWidth": "Fit Width" },
+    "settings": "設定"
+  },
+  "sidebar": {
+    "explorer": "檔案總管",
+    "thumbnails": "頁面",
+    "bookmarks": "書籤",
+    "search": "搜尋"
+  },
+  "statusbar": { "page": "{{current}} / {{total}}" },
+  "dialog": {
+    "openPdf": "開啟 PDF",
+    "savePdf": "儲存 PDF",
+    "unsavedChanges": "Unsaved changes. Save?"
+  },
+  "settings": {
+    "title": "設定",
+    "language": "Language",
+    "theme": "Theme",
+    "theme_dark": "Dark",
+    "theme_light": "Light",
+    "translation": "AI Translation",
+    "translationEngine": "Engine",
+    "apiKey": "API Key"
+  },
+  "errors": {
+    "loadFailed": "Failed to load PDF",
+    "saveFailed": "Failed to save PDF"
+  }
+}

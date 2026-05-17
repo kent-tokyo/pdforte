@@ -1,0 +1,210 @@
+pdforte
+Copyright 2024-2026 pdforte contributors
+
+This product includes software developed by third parties under the following licenses:
+
+-------------------------------------------------------------------------------
+PDF.js
+Copyright 2012 Mozilla Foundation
+Licensed under the Apache License, Version 2.0
+https://github.com/mozilla/pdf.js
+-------------------------------------------------------------------------------
+
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+1. Definitions.
+
+   "License" shall mean the terms and conditions for use, reproduction,
+   and distribution as defined by Sections 1 through 9 of this document.
+
+   "Licensor" shall mean the copyright owner or entity authorized by
+   the copyright owner that is granting the License.
+
+   "Legal Entity" shall mean the union of the acting entity and all
+   other entities that control, are controlled by, or are under common
+   control with that entity.
+
+   "You" (or "Your") shall mean an individual or Legal Entity
+   exercising permissions granted by this License.
+
+   "Source" form shall mean the preferred form for making modifications,
+   including but not limited to software source code, documentation
+   source, and configuration files.
+
+   "Object" form shall mean any form resulting from mechanical
+   transformation or translation of a Source form.
+
+   "Work" shall mean the work of authorship made available under the
+   License.
+
+   "Derivative Works" shall mean any work that is based on the Work.
+
+   "Contribution" shall mean any work of authorship submitted to the
+   Licensor for inclusion in the Work.
+
+   "Contributor" shall mean Licensor and any Legal Entity on behalf of
+   whom a Contribution has been received by the Licensor and included
+   in the Work.
+
+2. Grant of Copyright License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   copyright license to reproduce, prepare Derivative Works of,
+   publicly display, publicly perform, sublicense, and distribute the
+   Work and such Derivative Works in Source or Object form.
+
+3. Grant of Patent License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   (except as stated in this section) patent license to make, have
+   made, use, offer to sell, sell, import, and otherwise transfer the
+   Work.
+
+4. Redistribution. You may reproduce and distribute copies of the
+   Work or Derivative Works thereof in any medium, with or without
+   modifications, and in Source or Object form, provided that You
+   meet the following conditions:
+
+   (a) You must give any other recipients of the Work or Derivative
+       Works a copy of this License; and
+
+   (b) You must cause any modified files to carry prominent notices
+       stating that You changed the files; and
+
+   (c) You must retain, in the Source form of any Derivative Works
+       that You distribute, all copyright, patent, trademark, and
+       attribution notices from the Source form of the Work; and
+
+   (d) If the Work includes a "NOTICE" text file, You must include a
+       readable copy of the attribution notices contained within such
+       NOTICE file.
+
+(Full Apache 2.0 license text: http://www.apache.org/licenses/LICENSE-2.0)
+
+-------------------------------------------------------------------------------
+Noto Sans (Latin/Greek/Cyrillic), Noto Sans JP, Noto Sans KR,
+Noto Sans SC, Noto Sans TC
+Copyright 2022 The Noto Project Authors
+Licensed under the SIL Open Font License, Version 1.1
+https://github.com/google/fonts
+https://scripts.sil.org/OFL
+-------------------------------------------------------------------------------
+
+PREAMBLE
+
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded,
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software
+components as distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to,
+deleting, or substituting -- in part or in whole -- any of the
+components of the Original Version, by changing formats or by porting
+the Font Software to a new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION AND CONDITIONS
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed,
+modify, redistribute, and sell modified and unmodified copies of the
+Font Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components, in
+Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the
+corresponding Copyright Holder.
+
+4) The Font Software may be altered, but the altered Font Software
+may be redistributed only under the same terms as the original Font
+Software, with the addition of a permission for the redistribution of
+the Font Software in combination with software meeting the above
+conditions of this license.
+
+5) The Font Software may not be modified in any way that changes the
+language of this license. The modification of the Font Software is
+allowed by this license only for the purpose of creating modified
+versions.
+
+-------------------------------------------------------------------------------
+Tauri
+Copyright 2019-2024 Tauri Programme within The Commons Conservancy
+Licensed under the MIT License
+https://github.com/tauri-apps/tauri
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+-------------------------------------------------------------------------------
+
+harumi
+Copyright 2024 harumi contributors
+Licensed under the MIT License
+https://github.com/yamakaky/harumi (or applicable source)
+-------------------------------------------------------------------------------
+
+lopdf
+Copyright 2015-2024 lopdf contributors
+Licensed under the MIT License
+https://github.com/J-F-Liu/lopdf
+-------------------------------------------------------------------------------
+
+React
+Copyright (c) Meta Platforms, Inc. and affiliates.
+Licensed under the MIT License
+https://github.com/facebook/react
+-------------------------------------------------------------------------------
+
+Zustand
+Copyright (c) 2019 Paul Henschel
+Licensed under the MIT License
+https://github.com/pmndrs/zustand
+-------------------------------------------------------------------------------

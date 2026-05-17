@@ -1,0 +1,47 @@
+{
+  "toolbar": {
+    "open": "Ouvrir",
+    "save": "Enregistrer",
+    "saveAs": "Enregistrer sous",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "tools": {
+      "hand": "Hand",
+      "select": "Select",
+      "textbox": "Text",
+      "highlight": "Highlight",
+      "underline": "Underline",
+      "strikethrough": "Strike",
+      "signature": "Sign",
+      "stamp": "Stamp"
+    },
+    "zoom": { "fitPage": "Fit Page", "fitWidth": "Fit Width" },
+    "settings": "Paramètres"
+  },
+  "sidebar": {
+    "explorer": "Explorateur",
+    "thumbnails": "Pages",
+    "bookmarks": "Signets",
+    "search": "Rechercher"
+  },
+  "statusbar": { "page": "{{current}} / {{total}}" },
+  "dialog": {
+    "openPdf": "Ouvrir PDF",
+    "savePdf": "Enregistrer PDF",
+    "unsavedChanges": "Unsaved changes. Save?"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Language",
+    "theme": "Theme",
+    "theme_dark": "Dark",
+    "theme_light": "Light",
+    "translation": "AI Translation",
+    "translationEngine": "Engine",
+    "apiKey": "API Key"
+  },
+  "errors": {
+    "loadFailed": "Failed to load PDF",
+    "saveFailed": "Failed to save PDF"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "toolbar": {
+    "open": "開く",
+    "save": "保存",
+    "saveAs": "名前を付けて保存",
+    "undo": "元に戻す",
+    "redo": "やり直し",
+    "tools": {
+      "hand": "手のひら",
+      "select": "選択",
+      "textbox": "テキスト",
+      "highlight": "蛍光ペン",
+      "underline": "下線",
+      "strikethrough": "取り消し線",
+      "signature": "署名",
+      "stamp": "スタンプ"
+    },
+    "zoom": { "fitPage": "ページに合わせる", "fitWidth": "幅に合わせる" },
+    "settings": "設定"
+  },
+  "sidebar": {
+    "explorer": "エクスプローラー",
+    "thumbnails": "ページ",
+    "bookmarks": "目次",
+    "search": "検索"
+  },
+  "statusbar": { "page": "{{current}} / {{total}} ページ" },
+  "dialog": {
+    "openPdf": "PDFを開く",
+    "savePdf": "PDFを保存",
+    "unsavedChanges": "未保存の変更があります。保存しますか？"
+  },
+  "settings": {
+    "title": "設定",
+    "language": "言語",
+    "theme": "テーマ",
+    "theme_dark": "ダーク",
+    "theme_light": "ライト",
+    "translation": "AI翻訳",
+    "translationEngine": "翻訳エンジン",
+    "apiKey": "APIキー"
+  },
+  "errors": {
+    "loadFailed": "PDFの読み込みに失敗しました",
+    "saveFailed": "PDFの保存に失敗しました"
+  }
+}

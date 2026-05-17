@@ -1,0 +1,111 @@
+@import "./variables.css";
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+input, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+}
+
+/* Annotation items remain interactive even when parent AnnotationLayer is pointer-events:none (edit/select modes) */
+.annotation-item {
+  pointer-events: auto;
+}
+
+/* TextBox: no border when idle; subtle dashed on hover; solid blue when selected */
+.textbox-annotation {
+  border: none !important;
+}
+.textbox-annotation:hover {
+  border: 1px dashed rgba(20, 115, 230, 0.45) !important;
+}
+.textbox-annotation.textbox-selected {
+  border: 1.5px solid #1473e6 !important;
+}
+
+/* Print: hide UI chrome, show only PDF pages */
+@media print {
+  .toolbar, .sidebar, .statusbar { display: none !important; }
+  .pdf-viewer { overflow: visible !important; height: auto !important; }
+  .pdf-page { box-shadow: none !important; margin-bottom: 0 !important; page-break-after: always; }
+}
+
+/* Resize handles on selected TextBoxAnnotation */
+.resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #1473e6;
+  border: 1.5px solid #fff;
+  border-radius: 1px;
+  z-index: 20;
+  pointer-events: auto;
+}
+
+/* PDF.js Text Layer */
+.pdf-text-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.25; /* visible only when selected */
+  line-height: 1;
+}
+.pdf-text-layer span,
+.pdf-text-layer br {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  /* Re-enable text selection */
+  user-select: text;
+  -webkit-user-select: text;
+}
+/* Highlight the selected text with browser default selection color */
+.pdf-text-layer ::selection {
+  background: rgba(0, 100, 255, 0.3);
+  color: transparent;
+}
+/* Show text layer when in selection mode (class added by PdfPage) */
+.pdf-page:has(.pdf-text-layer[style*="auto"]) .pdf-text-layer {
+  opacity: 1;
+}
