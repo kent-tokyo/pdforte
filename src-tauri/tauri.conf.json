@@ -45,7 +45,7 @@
         "displayLanguageSelector": false,
         "languages": ["Japanese", "English"],
         "installerIcon": "icons/icon.ico",
-        "installMode": "currentUser",
+        "installMode": "perUser",
         "license": "../LICENSE"
       },
       "wix": {
