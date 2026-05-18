@@ -35,7 +35,7 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build Tauri app (Windows)
+      - name: Build Tauri app (Windows x64)
         run: npm run tauri build -- --target x86_64-pc-windows-msvc
 
       - name: Create portable zip
@@ -46,27 +46,27 @@ jobs:
           if (Test-Path "$releaseDir/resources") {
             $items += "$releaseDir/resources"
           }
-          Compress-Archive -Path $items -DestinationPath "pdforte-portable-windows.zip"
+          Compress-Archive -Path $items -DestinationPath "pdforte-portable-windows-x64.zip"
 
       - name: Upload NSIS installer
         uses: actions/upload-artifact@v4
         with:
-          name: pdforte-windows-setup
+          name: pdforte-windows-setup-x64
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
           if-no-files-found: warn
 
       - name: Upload MSI installer
         uses: actions/upload-artifact@v4
         with:
-          name: pdforte-windows-msi
+          name: pdforte-windows-msi-x64
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
           if-no-files-found: warn
 
       - name: Upload portable zip
         uses: actions/upload-artifact@v4
         with:
-          name: pdforte-windows-portable
-          path: pdforte-portable-windows.zip
+          name: pdforte-windows-portable-x64
+          path: pdforte-portable-windows-x64.zip
           if-no-files-found: warn
 
       - name: Attach to GitHub Release
@@ -76,11 +76,67 @@ jobs:
           files: |
             src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
             src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
-            pdforte-portable-windows.zip
+            pdforte-portable-windows-x64.zip
           generate_release_notes: true
 
   build-macos:
     runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Rust (stable) with universal targets
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Tauri app (macOS universal)
+        run: npm run tauri build -- --target universal-apple-darwin
+
+      - name: Zip .app bundle (portable)
+        run: |
+          ditto -c -k --keepParent \
+            src-tauri/target/universal-apple-darwin/release/bundle/macos/pdforte.app \
+            pdforte-macos-universal.zip
+
+      - name: Upload .app zip (portable)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdforte-macos-app-universal
+          path: pdforte-macos-universal.zip
+          if-no-files-found: warn
+
+      - name: Upload DMG installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdforte-macos-dmg-universal
+          path: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          if-no-files-found: warn
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            pdforte-macos-universal.zip
+            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+
+  build-linux:
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -99,30 +155,42 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build Tauri app (macOS)
+      - name: Build Tauri app (Linux x64)
         run: npm run tauri build
 
-      - name: Zip .app bundle (portable)
-        run: |
-          ditto -c -k --keepParent \
-            src-tauri/target/release/bundle/macos/pdforte.app \
-            pdforte-macos.zip
-
-      - name: Upload .app zip (portable)
+      - name: Upload AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: pdforte-macos-app
-          path: pdforte-macos.zip
+          name: pdforte-linux-appimage
+          path: src-tauri/target/release/bundle/appimage/*.AppImage
           if-no-files-found: warn
 
-      - name: Upload DMG installer
+      - name: Upload .deb package
         uses: actions/upload-artifact@v4
         with:
-          name: pdforte-macos-dmg
-          path: src-tauri/target/release/bundle/dmg/*.dmg
+          name: pdforte-linux-deb
+          path: src-tauri/target/release/bundle/deb/*.deb
+          if-no-files-found: warn
+
+      - name: Upload .rpm package
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdforte-linux-rpm
+          path: src-tauri/target/release/bundle/rpm/*.rpm
           if-no-files-found: warn
 
       - name: Attach to GitHub Release
@@ -130,5 +198,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            pdforte-macos.zip
-            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/rpm/*.rpm
