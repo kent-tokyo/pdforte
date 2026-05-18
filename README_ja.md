@@ -124,6 +124,25 @@
   macOS: `brew install qpdf`
   Ubuntu: `sudo apt install qpdf`
 
+## インストール
+
+### macOS
+
+[Releases](https://github.com/kent-tokyo/pdforte/releases) から `pdforte-macos.zip` をダウンロードし、解凍した `pdforte.app` を `/Applications` に移動してください。
+
+> **「pdforte.appは壊れているため開けません」と表示される場合（macOS Sequoia / Ventura）**
+>
+> Apple の公証（Notarization）未対応のため Gatekeeper にブロックされます。
+> ターミナルで以下を一度実行すると、通常どおり開けるようになります:
+> ```bash
+> xattr -cr /Applications/pdforte.app
+> ```
+> または `.app` を右クリック → **開く** → **開く** でも回避できます。
+
+### Windows
+
+Releases から `pdforte-setup.exe`（インストーラー）または `pdforte-portable-windows.zip`（インストール不要）をダウンロードしてください。
+
 ## ビルド方法
 
 ```bash

@@ -107,8 +107,9 @@ jobs:
 
       - name: Zip .app bundle (portable)
         run: |
-          cd src-tauri/target/release/bundle/macos
-          zip -r ../../../../../pdforte-macos.zip pdforte.app
+          ditto -c -k --keepParent \
+            src-tauri/target/release/bundle/macos/pdforte.app \
+            pdforte-macos.zip
 
       - name: Upload .app zip (portable)
         uses: actions/upload-artifact@v4

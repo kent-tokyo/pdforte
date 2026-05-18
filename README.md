@@ -121,6 +121,25 @@ Optional:
 - **qpdf** — for PDF password protection
   `brew install qpdf` / `sudo apt install qpdf`
 
+## Installation
+
+### macOS
+
+Download `pdforte-macos.zip` from [Releases](https://github.com/kent-tokyo/pdforte/releases), unzip, and move `pdforte.app` to `/Applications`.
+
+> **"pdforte.app is damaged" error on macOS Sequoia / Ventura**
+>
+> This happens because the app is not notarized with Apple (requires a paid Developer account).
+> Run this once in Terminal to remove the quarantine flag, then open normally:
+> ```bash
+> xattr -cr /Applications/pdforte.app
+> ```
+> Alternatively, right-click the `.app` → **Open** → **Open** to bypass Gatekeeper once.
+
+### Windows
+
+Download `pdforte-setup.exe` (installer) or `pdforte-portable-windows.zip` (no install needed) from Releases.
+
 ## Build from Source
 
 ```bash
