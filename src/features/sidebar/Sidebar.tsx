@@ -42,8 +42,12 @@ export function Sidebar() {
             title={tab.label}
             style={{
               flex: 1,
-              height: 36,
-              fontSize: 16,
+              height: 44,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 2,
               background: sidebarTab === tab.id ? "var(--bg-primary)" : "transparent",
               color: sidebarTab === tab.id ? "var(--accent)" : "var(--text-muted)",
               borderBottom: sidebarTab === tab.id ? `2px solid var(--accent)` : "2px solid transparent",
@@ -52,9 +56,11 @@ export function Sidebar() {
               borderBottomWidth: 2,
               borderBottomStyle: "solid",
               borderBottomColor: sidebarTab === tab.id ? "var(--accent)" : "transparent",
+              padding: 0,
             }}
           >
-            {tab.icon}
+            <span style={{ fontSize: 14 }}>{tab.icon}</span>
+            <span style={{ fontSize: 9, letterSpacing: "0.02em" }}>{tab.label.length > 4 ? tab.label.slice(0, 4) : tab.label}</span>
           </button>
         ))}
       </div>

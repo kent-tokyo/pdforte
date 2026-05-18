@@ -50,11 +50,18 @@ export function ToolsMenu() {
   const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const onMouse = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) close();
     };
-    if (open) document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
+    if (open) {
+      document.addEventListener("mousedown", onMouse);
+      document.addEventListener("keydown", onKey);
+    }
+    return () => {
+      document.removeEventListener("mousedown", onMouse);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [open, close]);
 
   const action = useCallback((fn: () => void) => () => { fn(); close(); }, [close]);
@@ -126,7 +133,7 @@ export function ToolsMenu() {
         }}>
           {sections.map((sec) => (
             <div key={sec.heading}>
-              <div style={{ padding: "5px 12px 2px", fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <div style={{ padding: "5px 12px 2px", fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 {sec.heading}
               </div>
               {sec.items.map((item) => (

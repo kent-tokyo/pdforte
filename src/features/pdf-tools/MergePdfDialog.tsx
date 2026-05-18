@@ -45,14 +45,10 @@ export function MergePdfDialog() {
       if (!outPath) { setBusy(false); return; }
       await invoke("save_pdf", { path: outPath, bytes: Array.from(merged) });
 
-      const shouldOpen = window.confirm(`結合完了: ${outPath}\n\nこのファイルを開きますか？`);
-      if (shouldOpen) {
-        clearAnnotations();
-        await loadFromBytes(merged, outPath);
-        close();
-      } else {
-        setStatus(`保存しました: ${outPath}`);
-      }
+      setStatus(`完了: ${outPath.split(/[/\\]/).pop()}`);
+      clearAnnotations();
+      await loadFromBytes(merged, outPath);
+      close();
     } catch (err) {
       setStatus(`エラー: ${err}`);
     } finally {

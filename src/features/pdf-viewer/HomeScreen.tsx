@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { usePdfjs } from "./usePdfjs";
-import { useUiStore } from "../../store/uiStore";
+
 import { useRecentFilesStore, type RecentFile } from "../../store/recentFilesStore";
 
 const TOOL_CARDS = [
@@ -45,7 +45,6 @@ function formatRelativeTime(ts: number): string {
 
 export function HomeScreen() {
   const { loadFromBytes } = usePdfjs();
-  const { setConvertDialogOpen, setPageOrderDialogOpen } = useUiStore();
   const { recentFiles, remove } = useRecentFilesStore();
 
   const openFileDialog = useCallback(async () => {
@@ -73,11 +72,9 @@ export function HomeScreen() {
     }
   }, [loadFromBytes, remove]);
 
-  const handleToolClick = useCallback((title: string) => {
-    if (title === "PDFツール") setPageOrderDialogOpen(true);
-    else if (title === "PDFを編集") setConvertDialogOpen(true);
-    else openFileDialog();
-  }, [openFileDialog, setPageOrderDialogOpen, setConvertDialogOpen]);
+  const handleToolClick = useCallback((_title: string) => {
+    openFileDialog();
+  }, [openFileDialog]);
 
   return (
     <div style={{

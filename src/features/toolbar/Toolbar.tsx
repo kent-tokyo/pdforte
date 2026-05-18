@@ -186,14 +186,14 @@ export function Toolbar() {
       {/* Page nav */}
       {pdfDoc && (
         <>
-          <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} style={btnStyle}>‹</button>
+          <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} title="前のページ (←)" style={btnStyle}>‹</button>
           <input
             type="number" value={currentPage} min={1} max={numPages}
             onChange={handlePageInput}
-            style={{ width: 40, textAlign: "center", background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 3, padding: "2px" }}
+            style={{ width: 48, textAlign: "center", background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 3, padding: "2px", fontSize: 12 }}
           />
           <span style={{ color: "var(--text-secondary)", fontSize: 12 }}>/ {numPages}</span>
-          <button onClick={() => setCurrentPage(Math.min(numPages, currentPage + 1))} style={btnStyle}>›</button>
+          <button onClick={() => setCurrentPage(Math.min(numPages, currentPage + 1))} title="次のページ (→)" style={btnStyle}>›</button>
         </>
       )}
 

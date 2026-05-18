@@ -1,4 +1,4 @@
-import type { ReactNode, CSSProperties } from "react";
+import { useEffect, useRef, type ReactNode, type CSSProperties } from "react";
 
 interface DialogProps {
   isOpen: boolean;
@@ -10,13 +10,48 @@ interface DialogProps {
 }
 
 export function Dialog({ isOpen, onClose, title, children, width = 440, zIndex = 1000 }: DialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = `dialog-title-${title.replace(/\s+/g, "-")}`;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    // Focus the dialog on open
+    dialogRef.current?.focus();
+    // Focus trap
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { onClose(); return; }
+      if (e.key !== "Tab") return;
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable || focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
   return (
     <div style={{ ...overlayStyle, zIndex }} onClick={onClose}>
-      <div style={{ ...dialogStyle, width }} onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        style={{ ...dialogStyle, width, outline: "none" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div style={headerStyle}>
-          <span>{title}</span>
-          <button onClick={onClose} style={closeBtnStyle}>✕</button>
+          <span id={titleId}>{title}</span>
+          <button onClick={onClose} aria-label="閉じる" style={closeBtnStyle}>✕</button>
         </div>
         {children}
       </div>

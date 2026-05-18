@@ -89,12 +89,11 @@ export function useMenuEvents() {
           ref.current.uiStore.setSidebarTab("search");
         })
       );
-      // 文書のプロパティ
+      // 文書のプロパティ → MetadataDialog を開く
       push(
         await listen("menu:properties", () => {
-          const { pdfDoc, filePath } = ref.current.pdfStore;
-          if (!pdfDoc) return;
-          alert(`ファイル: ${filePath ?? "不明"}\nページ数: ${pdfDoc.numPages}`);
+          if (!ref.current.pdfStore.pdfDoc) return;
+          ref.current.uiStore.setMetadataDialogOpen(true);
         })
       );
 

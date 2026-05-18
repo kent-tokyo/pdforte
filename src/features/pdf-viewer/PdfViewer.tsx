@@ -82,6 +82,30 @@ export function PdfViewer() {
     return () => container.removeEventListener("scroll", updateVisible);
   }, [updateVisible, pages]);
 
+  const { currentPage, numPages } = usePdfStore();
+  useEffect(() => {
+    if (!pdfDoc) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable) return;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "PageDown") {
+        e.preventDefault();
+        setCurrentPage(Math.min(numPages, currentPage + 1));
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "PageUp") {
+        e.preventDefault();
+        setCurrentPage(Math.max(1, currentPage - 1));
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        setCurrentPage(1);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        setCurrentPage(numPages);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pdfDoc, currentPage, numPages, setCurrentPage]);
+
   if (!pdfDoc) {
     return <HomeScreen />;
   }
