@@ -39,7 +39,6 @@ pub struct LibreOfficeStatus {
 pub async fn check_libreoffice() -> LibreOfficeStatus {
     let bin = super::libreoffice_bin();
 
-    // Try to get version
     let version_result = Command::new(bin).arg("--version").output();
     if let Ok(out) = version_result {
         if out.status.success() {
@@ -53,7 +52,6 @@ pub async fn check_libreoffice() -> LibreOfficeStatus {
         }
     }
 
-    // Also try PATH
     let path_result = Command::new("libreoffice").arg("--version").output();
     if let Ok(out) = path_result {
         if out.status.success() {
@@ -89,17 +87,24 @@ pub async fn convert_via_libreoffice(
     format: String,
     output_dir: String,
 ) -> Result<String, String> {
-    let lo = super::libreoffice_bin();
-    let status = Command::new(lo)
-        .args(["--headless", "--convert-to", &format, "--outdir", &output_dir, &input_path])
-        .status()
-        .map_err(|e| format!("LibreOffice が見つかりません。インストールしてください。({})", e))?;
+    let lo = super::libreoffice_bin().to_string();
+    let fmt = format.clone();
+    let inp = input_path.clone();
+    let out = output_dir.clone();
+
+    let status = tokio::task::spawn_blocking(move || {
+        Command::new(&lo)
+            .args(["--headless", "--convert-to", &fmt, "--outdir", &out, &inp])
+            .status()
+            .map_err(|e| format!("LibreOffice が見つかりません。インストールしてください。({})", e))
+    })
+    .await
+    .map_err(|e| format!("spawn_blocking error: {}", e))??;
 
     if !status.success() {
         return Err(format!("LibreOffice 変換に失敗しました (format={})", format));
     }
 
-    // Return the output file path
     let stem = Path::new(&input_path)
         .file_stem()
         .unwrap_or_default()
@@ -112,29 +117,29 @@ pub async fn convert_via_libreoffice(
 
 #[tauri::command]
 pub async fn ocr_page(image_bytes: Vec<u8>, lang: String) -> Result<String, String> {
-    let nonce = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_nanos();
-    let pid = std::process::id();
-    let tmp = std::env::temp_dir();
-    let tmp_img = tmp.join(format!("pdforte_ocr_in_{pid}_{nonce}.png"));
-    let tmp_out_base = tmp.join(format!("pdforte_ocr_out_{pid}_{nonce}"));
-    let tmp_txt = tmp.join(format!("pdforte_ocr_out_{pid}_{nonce}.txt"));
+    let tmp_img = temp_path("ocr_in", "png");
+    let tmp_out_base = temp_path("ocr_out", "txt").with_extension("");
+    let tmp_txt = tmp_out_base.with_extension("txt");
 
     std::fs::write(&tmp_img, &image_bytes).map_err(|e| e.to_string())?;
 
     let lang_arg = if lang.is_empty() { "jpn+eng".to_string() } else { lang };
-    let run_result = Command::new("tesseract")
-        .args([
-            tmp_img.to_str().unwrap(),
-            tmp_out_base.to_str().unwrap(),
-            "-l", &lang_arg,
-        ])
-        .status()
-        .map_err(|e| format!("Tesseract が見つかりません: {}", e));
+    let img_str = tmp_img.to_str().unwrap_or("").to_string();
+    let base_str = tmp_out_base.to_str().unwrap_or("").to_string();
+    let lang_clone = lang_arg.clone();
 
-    // Always clean up input regardless of outcome.
+    let run_result = tokio::task::spawn_blocking(move || {
+        Command::new("tesseract")
+            .args([&img_str, &base_str, "-l", &lang_clone])
+            .status()
+            .map_err(|e| format!("Tesseract が見つかりません: {}", e))
+    })
+    .await
+    .map_err(|e| format!("spawn_blocking error: {}", e))?;
+
     let _ = std::fs::remove_file(&tmp_img);
-
     let status = run_result?;
+
     if !status.success() {
         let _ = std::fs::remove_file(&tmp_txt);
         return Err("Tesseract OCR に失敗しました".to_string());
@@ -147,29 +152,29 @@ pub async fn ocr_page(image_bytes: Vec<u8>, lang: String) -> Result<String, Stri
 
 #[tauri::command]
 pub async fn ocr_page_to_pdf(image_bytes: Vec<u8>, lang: String) -> Result<Vec<u8>, String> {
-    let nonce = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_nanos();
-    let pid = std::process::id();
-    let tmp = std::env::temp_dir();
-    let tmp_img = tmp.join(format!("pdforte_ocr_in_{pid}_{nonce}.png"));
-    let tmp_out_base = tmp.join(format!("pdforte_ocr_page_{pid}_{nonce}"));
-    let tmp_pdf = tmp.join(format!("pdforte_ocr_page_{pid}_{nonce}.pdf"));
+    let tmp_img = temp_path("ocr_in", "png");
+    let tmp_out_base = temp_path("ocr_page", "pdf").with_extension("");
+    let tmp_pdf = tmp_out_base.with_extension("pdf");
 
     std::fs::write(&tmp_img, &image_bytes).map_err(|e| e.to_string())?;
 
     let lang_arg = if lang.is_empty() { "jpn+eng".to_string() } else { lang };
-    let run_result = Command::new("tesseract")
-        .args([
-            tmp_img.to_str().unwrap(),
-            tmp_out_base.to_str().unwrap(),
-            "-l", &lang_arg,
-            "pdf",
-        ])
-        .status()
-        .map_err(|e| format!("Tesseract が見つかりません: {}", e));
+    let img_str = tmp_img.to_str().unwrap_or("").to_string();
+    let base_str = tmp_out_base.to_str().unwrap_or("").to_string();
+    let lang_clone = lang_arg.clone();
+
+    let run_result = tokio::task::spawn_blocking(move || {
+        Command::new("tesseract")
+            .args([&img_str, &base_str, "-l", &lang_clone, "pdf"])
+            .status()
+            .map_err(|e| format!("Tesseract が見つかりません: {}", e))
+    })
+    .await
+    .map_err(|e| format!("spawn_blocking error: {}", e))?;
 
     let _ = std::fs::remove_file(&tmp_img);
-
     let status = run_result?;
+
     if !status.success() {
         let _ = std::fs::remove_file(&tmp_pdf);
         return Err("Tesseract PDF 生成に失敗しました".to_string());
@@ -199,7 +204,6 @@ pub async fn protect_pdf(
     allow_printing: bool,
     allow_copying: bool,
 ) -> Result<(), String> {
-    // Write passwords to a temp argfile (one arg per line) so they don't appear in process argv.
     let argfile_path = temp_path("qpdf_args", "txt");
 
     let mut lines = vec![
@@ -219,10 +223,15 @@ pub async fn protect_pdf(
 
     write_secure(&argfile_path, lines.join("\n").as_bytes())?;
 
-    let run_result = Command::new("qpdf")
-        .arg(format!("@{}", argfile_path.to_str().unwrap_or("")))
-        .status()
-        .map_err(|e| format!("qpdf が見つかりません。`brew install qpdf` でインストールしてください。({})", e));
+    let argfile_str = argfile_path.to_str().unwrap_or("").to_string();
+    let run_result = tokio::task::spawn_blocking(move || {
+        Command::new("qpdf")
+            .arg(format!("@{}", argfile_str))
+            .status()
+            .map_err(|e| format!("qpdf が見つかりません。`brew install qpdf` でインストールしてください。({})", e))
+    })
+    .await
+    .map_err(|e| format!("spawn_blocking error: {}", e))?;
 
     let _ = std::fs::remove_file(&argfile_path);
 
@@ -231,35 +240,39 @@ pub async fn protect_pdf(
 
 #[tauri::command]
 pub async fn unlock_pdf(bytes: Vec<u8>, password: String) -> Result<Vec<u8>, String> {
-    use std::io::Write;
-    use std::process::Stdio;
-
     let in_path = temp_path("unlock_in", "pdf");
     let out_path = temp_path("unlock_out", "pdf");
 
     write_secure(&in_path, &bytes)?;
 
-    // Pass password via stdin (--password-file=-) to keep it out of process argv.
-    let mut child = Command::new("qpdf")
-        .args([
-            "--password-file=-",
-            "--decrypt",
-            in_path.to_str().unwrap_or(""),
-            out_path.to_str().unwrap_or(""),
-        ])
-        .stdin(Stdio::piped())
-        .spawn()
-        .map_err(|e| format!("qpdf が見つかりません。`brew install qpdf` でインストールしてください。({})", e))?;
+    let in_str = in_path.to_str().unwrap_or("").to_string();
+    let out_str = out_path.to_str().unwrap_or("").to_string();
+    let in_path_clone = in_path.clone();
 
-    if let Some(mut stdin) = child.stdin.take() {
-        let _ = stdin.write_all(password.as_bytes());
-    }
-    let status = child.wait().map_err(|e| e.to_string())?;
-    let _ = std::fs::remove_file(&in_path);
+    let unlock_result = tokio::task::spawn_blocking(move || -> Result<(), String> {
+        use std::io::Write;
+        use std::process::Stdio;
 
-    if !status.success() {
+        let mut child = Command::new("qpdf")
+            .args(["--password-file=-", "--decrypt", &in_str, &out_str])
+            .stdin(Stdio::piped())
+            .spawn()
+            .map_err(|e| format!("qpdf が見つかりません。`brew install qpdf` でインストールしてください。({})", e))?;
+
+        if let Some(mut stdin) = child.stdin.take() {
+            let _ = stdin.write_all(password.as_bytes());
+        }
+        let status = child.wait().map_err(|e| e.to_string())?;
+        let _ = std::fs::remove_file(&in_path_clone);
+
+        if status.success() { Ok(()) } else { Err("パスワードが正しくないか、復号化に失敗しました".to_string()) }
+    })
+    .await
+    .map_err(|e| format!("spawn_blocking error: {}", e))?;
+
+    if let Err(e) = unlock_result {
         let _ = std::fs::remove_file(&out_path);
-        return Err("パスワードが正しくないか、復号化に失敗しました".to_string());
+        return Err(e);
     }
 
     let result = std::fs::read(&out_path).map_err(|e| e.to_string())?;

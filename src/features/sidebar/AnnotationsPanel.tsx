@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAnnotationStore } from "../../store/annotationStore";
 import { usePdfStore } from "../../store/pdfStore";
@@ -51,12 +51,21 @@ function preview(ann: Annotation): string {
 const STICKY_COLORS = ["#FFD700", "#90EE90", "#87CEEB", "#FFB6C1", "#DDA0DD", "#FFA07A"];
 
 export function AnnotationsPanel() {
-  const { annotations, selectedId, updateAnnotation, deleteAnnotation, setSelectedId, loadAnnotations } = useAnnotationStore();
-  const { setCurrentPage, numPages } = usePdfStore();
+  const annotations = useAnnotationStore(s => s.annotations);
+  const selectedId = useAnnotationStore(s => s.selectedId);
+  const updateAnnotation = useAnnotationStore(s => s.updateAnnotation);
+  const deleteAnnotation = useAnnotationStore(s => s.deleteAnnotation);
+  const setSelectedId = useAnnotationStore(s => s.setSelectedId);
+  const loadAnnotations = useAnnotationStore(s => s.loadAnnotations);
+  const setCurrentPage = usePdfStore(s => s.setCurrentPage);
+  const numPages = usePdfStore(s => s.numPages);
 
-  const allAnnotations: Annotation[] = [];
-  annotations.forEach((anns) => allAnnotations.push(...anns));
-  allAnnotations.sort((a, b) => a.pageIndex - b.pageIndex || a.createdAt - b.createdAt);
+  const allAnnotations = useMemo(() => {
+    const result: Annotation[] = [];
+    annotations.forEach((anns) => result.push(...anns));
+    result.sort((a, b) => a.pageIndex - b.pageIndex || a.createdAt - b.createdAt);
+    return result;
+  }, [annotations]);
 
   const selected = selectedId ? allAnnotations.find((a) => a.id === selectedId) ?? null : null;
 

@@ -34,9 +34,23 @@ const SHAPE_TOOLS: { id: AnnotationTool; label: string; icon: string }[] = [
 const ZOOM_PRESETS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
 
 export function Toolbar() {
-  const { pdfDoc, zoom, fitMode, currentPage, numPages, setZoom, setFitMode, setCurrentPage } = usePdfStore();
-  const { activeTool, setActiveTool, undo, redo, undoStack, redoStack } = useAnnotationStore();
-  const { setSignatureDialogOpen, setStampDialogOpen, setSettingsOpen } = useUiStore();
+  const pdfDoc = usePdfStore(s => s.pdfDoc);
+  const zoom = usePdfStore(s => s.zoom);
+  const fitMode = usePdfStore(s => s.fitMode);
+  const currentPage = usePdfStore(s => s.currentPage);
+  const numPages = usePdfStore(s => s.numPages);
+  const setZoom = usePdfStore(s => s.setZoom);
+  const setFitMode = usePdfStore(s => s.setFitMode);
+  const setCurrentPage = usePdfStore(s => s.setCurrentPage);
+  const activeTool = useAnnotationStore(s => s.activeTool);
+  const setActiveTool = useAnnotationStore(s => s.setActiveTool);
+  const undo = useAnnotationStore(s => s.undo);
+  const redo = useAnnotationStore(s => s.redo);
+  const undoCount = useAnnotationStore(s => s.undoStack.length);
+  const redoCount = useAnnotationStore(s => s.redoStack.length);
+  const setSignatureDialogOpen = useUiStore(s => s.setSignatureDialogOpen);
+  const setStampDialogOpen = useUiStore(s => s.setStampDialogOpen);
+  const setSettingsOpen = useUiStore(s => s.setSettingsOpen);
   const { loadFromBytes } = usePdfjs();
   const { save } = useSavePdf();
 
@@ -122,8 +136,8 @@ export function Toolbar() {
       <div style={separatorStyle} />
 
       {/* Undo/Redo */}
-      <button onClick={undo} disabled={undoStack.length === 0} title="元に戻す (Ctrl+Z)" style={btnStyle}>↩</button>
-      <button onClick={redo} disabled={redoStack.length === 0} title="やり直し (Ctrl+Y)" style={btnStyle}>↪</button>
+      <button onClick={undo} disabled={undoCount === 0} title="元に戻す (Ctrl+Z)" style={btnStyle}>↩</button>
+      <button onClick={redo} disabled={redoCount === 0} title="やり直し (Ctrl+Y)" style={btnStyle}>↪</button>
       <div style={separatorStyle} />
 
       {/* Annotation tools */}
