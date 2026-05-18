@@ -29,12 +29,14 @@ export function CompressDialog() {
   const [preset, setPreset] = useState<Preset>("medium");
   const [removeMeta, setRemoveMeta] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ bytes: Uint8Array; size: number } | null>(null);
 
   const close = useCallback(() => {
     setCompressDialogOpen(false);
     setResult(null);
     setBusy(false);
+    setError(null);
   }, [setCompressDialogOpen]);
 
   const handleCompress = useCallback(async () => {
@@ -52,7 +54,7 @@ export function CompressDialog() {
       const newBytes = new Uint8Array(out);
       setResult({ bytes: newBytes, size: newBytes.length });
     } catch (err) {
-      alert(`圧縮エラー: ${err}`);
+      setError(`圧縮エラー: ${err}`);
     } finally {
       setBusy(false);
     }
@@ -133,6 +135,8 @@ export function CompressDialog() {
             </div>
           </div>
         )}
+
+        {error && <p style={{ fontSize: 12, color: "#e34850", margin: 0 }}>{error}</p>}
 
         {/* Buttons */}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>

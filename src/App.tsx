@@ -28,6 +28,7 @@ import { CompressDialog } from "./features/pdf-tools/CompressDialog";
 import { FlattenDialog } from "./features/pdf-tools/FlattenDialog";
 import { UnlockPdfDialog } from "./features/pdf-tools/UnlockPdfDialog";
 import { PasswordDialog } from "./features/pdf-viewer/PasswordDialog";
+import { AboutDialog } from "./features/pdf-tools/AboutDialog";
 import { usePdfStore } from "./store/pdfStore";
 import { useAnnotationStore } from "./store/annotationStore";
 import { useUiStore } from "./store/uiStore";
@@ -127,6 +128,7 @@ export default function App() {
       <FlattenDialog />
       <UnlockPdfDialog />
       <PasswordDialog />
+      <AboutDialog />
     </div>
   );
 }

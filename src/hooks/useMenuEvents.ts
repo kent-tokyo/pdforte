@@ -205,9 +205,7 @@ export function useMenuEvents() {
       );
 
       push(
-        await listen("menu:about", () => {
-          alert("PDFine v0.1.0\n\nLightweight PDF editor powered by Tauri + PDF.js\nLicense: Apache 2.0");
-        })
+        await listen("menu:about", () => ref.current.uiStore.setAboutOpen(true))
       );
     };
 

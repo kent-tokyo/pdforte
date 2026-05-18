@@ -110,6 +110,7 @@ export function Toolbar() {
       padding: "0 8px",
       gap: 4,
       flexShrink: 0,
+      overflowX: "auto",
     }}>
       {/* File ops */}
       <button onClick={openFile} title="開く (Ctrl+O)" style={btnStyle}>📂</button>
@@ -131,6 +132,7 @@ export function Toolbar() {
           key={tool.id}
           onClick={() => handleToolClick(tool.id)}
           title={tool.label}
+          aria-pressed={activeTool === tool.id}
           style={{
             ...btnStyle,
             background: activeTool === tool.id ? "var(--accent)" : "transparent",
@@ -148,6 +150,7 @@ export function Toolbar() {
           key={tool.id}
           onClick={() => setActiveTool(tool.id)}
           title={tool.label}
+          aria-pressed={activeTool === tool.id}
           style={{
             ...btnStyle,
             fontWeight: 600,

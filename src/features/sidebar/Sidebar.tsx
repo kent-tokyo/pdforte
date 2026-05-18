@@ -60,7 +60,7 @@ export function Sidebar() {
             }}
           >
             <span style={{ fontSize: 14 }}>{tab.icon}</span>
-            <span style={{ fontSize: 9, letterSpacing: "0.02em" }}>{tab.label.length > 4 ? tab.label.slice(0, 4) : tab.label}</span>
+            <span style={{ fontSize: 11, letterSpacing: "0.02em" }}>{tab.label.length > 4 ? tab.label.slice(0, 4) : tab.label}</span>
           </button>
         ))}
       </div>

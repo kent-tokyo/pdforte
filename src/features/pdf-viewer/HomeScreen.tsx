@@ -1,33 +1,40 @@
 import { useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { usePdfjs } from "./usePdfjs";
-
+import { useUiStore } from "../../store/uiStore";
+import { useAnnotationStore } from "../../store/annotationStore";
 import { useRecentFilesStore, type RecentFile } from "../../store/recentFilesStore";
 
-const TOOL_CARDS = [
+type ToolAction = "annotate" | "signature" | "edit" | "tools";
+
+const TOOL_CARDS: { icon: string; title: string; desc: string; color: string; action: ToolAction }[] = [
   {
     icon: "🖊",
     title: "注釈を追加",
     desc: "ハイライト、テキストボックス、下線などの注釈を追加",
     color: "#e8a020",
+    action: "annotate",
   },
   {
     icon: "✍",
     title: "入力と署名",
     desc: "フォームに入力、署名を追加",
     color: "#9b59b6",
+    action: "signature",
   },
   {
     icon: "✏",
     title: "PDFを編集",
     desc: "テキスト、画像、ページなどを変更または追加",
     color: "#e74c3c",
+    action: "edit",
   },
   {
     icon: "⚙",
     title: "PDFツール",
     desc: "結合・分割・圧縮・変換など",
     color: "#27ae60",
+    action: "tools",
   },
 ];
 
@@ -46,6 +53,28 @@ function formatRelativeTime(ts: number): string {
 export function HomeScreen() {
   const { loadFromBytes } = usePdfjs();
   const { recentFiles, remove } = useRecentFilesStore();
+  const { setSidebarOpen, setSidebarTab, setSignatureDialogOpen } = useUiStore();
+  const { setActiveTool } = useAnnotationStore();
+
+  const applyToolAction = useCallback((action: ToolAction) => {
+    switch (action) {
+      case "annotate":
+        setSidebarOpen(true);
+        setSidebarTab("annotations");
+        setActiveTool("highlight");
+        break;
+      case "signature":
+        setSignatureDialogOpen(true);
+        break;
+      case "edit":
+        setActiveTool("select");
+        break;
+      case "tools":
+        setSidebarOpen(true);
+        setSidebarTab("thumbnails");
+        break;
+    }
+  }, [setSidebarOpen, setSidebarTab, setActiveTool, setSignatureDialogOpen]);
 
   const openFileDialog = useCallback(async () => {
     try {
@@ -72,9 +101,19 @@ export function HomeScreen() {
     }
   }, [loadFromBytes, remove]);
 
-  const handleToolClick = useCallback((_title: string) => {
-    openFileDialog();
-  }, [openFileDialog]);
+  const handleToolClick = useCallback(async (action: ToolAction) => {
+    try {
+      const path = await invoke<string | null>("open_file_dialog");
+      if (!path) return;
+      const result = await invoke<{ bytes: number[]; sidecar: string | null; file_path: string }>(
+        "open_pdf", { path }
+      );
+      await loadFromBytes(new Uint8Array(result.bytes), result.file_path);
+      applyToolAction(action);
+    } catch (err) {
+      console.error("Open failed:", err);
+    }
+  }, [loadFromBytes, applyToolAction]);
 
   return (
     <div style={{
@@ -122,7 +161,7 @@ export function HomeScreen() {
         {TOOL_CARDS.map((card) => (
           <div
             key={card.title}
-            onClick={() => handleToolClick(card.title)}
+            onClick={() => handleToolClick(card.action)}
             style={{
               background: "var(--bg-secondary)",
               border: "1px solid var(--border)",

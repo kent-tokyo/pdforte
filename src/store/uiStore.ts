@@ -33,6 +33,7 @@ interface UiState {
   unlockDialogOpen: boolean;
   passwordDialogOpen: boolean;
   passwordDialogIsRetry: boolean;
+  aboutOpen: boolean;
   readingMode: boolean;
 
   setSidebarOpen: (open: boolean) => void;
@@ -64,6 +65,7 @@ interface UiState {
   setFlattenDialogOpen: (open: boolean) => void;
   setUnlockDialogOpen: (open: boolean) => void;
   setPasswordDialog: (open: boolean, isRetry?: boolean) => void;
+  setAboutOpen: (open: boolean) => void;
   setReadingMode: (v: boolean) => void;
 }
 
@@ -98,6 +100,7 @@ export const useUiStore = create<UiState>((set) => ({
   unlockDialogOpen: false,
   passwordDialogOpen: false,
   passwordDialogIsRetry: false,
+  aboutOpen: false,
   readingMode: false,
 
   setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
@@ -129,5 +132,6 @@ export const useUiStore = create<UiState>((set) => ({
   setFlattenDialogOpen: (open) => set({ flattenDialogOpen: open }),
   setUnlockDialogOpen: (open) => set({ unlockDialogOpen: open }),
   setPasswordDialog: (open, isRetry = false) => set({ passwordDialogOpen: open, passwordDialogIsRetry: isRetry }),
+  setAboutOpen: (aboutOpen) => set({ aboutOpen }),
   setReadingMode: (v) => set({ readingMode: v }),
 }));

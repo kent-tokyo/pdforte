@@ -4,6 +4,7 @@ import { useUiStore } from "../../store/uiStore";
 import { SUPPORTED_LANGUAGES } from "../../i18n";
 import i18n from "../../i18n";
 import { useTranslation } from "react-i18next";
+import { Dialog } from "../../components/Dialog";
 
 interface Settings {
   language?: string;
@@ -49,22 +50,9 @@ export function SettingsDialog() {
     save({ ...settings, theme });
   }, [settings, save]);
 
-  if (!settingsOpen) return null;
-
   return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000,
-      display: "flex", alignItems: "center", justifyContent: "center",
-    }}>
-      <div style={{
-        background: "var(--bg-secondary)", borderRadius: 8, padding: 24,
-        width: 480, maxHeight: "80vh", overflowY: "auto", boxShadow: "var(--shadow-md)",
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <h2 style={{ color: "var(--text-primary)", fontSize: 16 }}>{t("settings.title")}</h2>
-          <button onClick={() => setSettingsOpen(false)} style={{ fontSize: 18, color: "var(--text-muted)" }}>✕</button>
-        </div>
-
+    <Dialog isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} title={t("settings.title")} width={480}>
+      <div style={{ padding: "16px 20px 20px", maxHeight: "70vh", overflowY: "auto" }}>
         {/* Language */}
         <div style={sectionStyle}>
           <label style={labelStyle}>{t("settings.language")}</label>
@@ -87,6 +75,7 @@ export function SettingsDialog() {
               <button
                 key={theme}
                 onClick={() => handleThemeChange(theme)}
+                aria-pressed={settings.theme === theme}
                 style={{
                   padding: "6px 16px", borderRadius: 4,
                   background: settings.theme === theme ? "var(--accent)" : "var(--bg-tertiary)",
@@ -123,12 +112,12 @@ export function SettingsDialog() {
 
         {/* Settings file path */}
         {settingsPath && (
-          <div style={{ marginTop: 16, fontSize: 11, color: "var(--text-muted)" }}>
+          <div style={{ marginTop: 8, fontSize: 11, color: "var(--text-muted)" }}>
             {settingsPath}
           </div>
         )}
       </div>
-    </div>
+    </Dialog>
   );
 }
 
