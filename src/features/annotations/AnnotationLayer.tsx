@@ -1,5 +1,6 @@
-import React, { useRef, useCallback, useState, useEffect } from "react";
+import React, { memo, useRef, useCallback, useState, useEffect } from "react";
 import type { PageViewport } from "pdfjs-dist";
+import type { Annotation } from "./annotationTypes";
 import { useAnnotationStore } from "../../store/annotationStore";
 import { pdfRectToScreen, screenRectToPdf } from "./annotationUtils";
 import { TextBoxAnnotation } from "./TextBoxAnnotation";
@@ -21,9 +22,48 @@ interface Props {
 const SHAPE_TOOLS = new Set(["shape-rect", "shape-ellipse", "shape-line", "shape-arrow"]);
 const PENCIL_TOOL = "pencil";
 const POLYGON_TOOL = "shape-polygon";
+const EMPTY_ANNOTATIONS: Annotation[] = [];
+
+// Memoized wrapper: re-renders only when this annotation or selection changes.
+const AnnotationItem = memo(function AnnotationItem({
+  ann,
+  viewport,
+  isSelected,
+}: {
+  ann: Annotation;
+  viewport: PageViewport;
+  isSelected: boolean;
+}) {
+  const screenPos = pdfRectToScreen(ann.pdfRect, viewport);
+  if (ann.type === "textbox")
+    return <TextBoxAnnotation annotation={ann} screenPos={screenPos} viewport={viewport} isSelected={isSelected} />;
+  if (ann.type === "highlight" || ann.type === "underline" || ann.type === "strikethrough")
+    return <HighlightAnnotation annotation={ann} viewport={viewport} isSelected={isSelected} />;
+  if (ann.type === "signature")
+    return <SignatureAnnotation annotation={ann} screenPos={screenPos} viewport={viewport} isSelected={isSelected} />;
+  if (ann.type === "stamp")
+    return <StampAnnotation annotation={ann} screenPos={screenPos} viewport={viewport} isSelected={isSelected} />;
+  if (ann.type === "stickynote")
+    return <StickyNoteAnnotation annotation={ann} screenPos={screenPos} viewport={viewport} isSelected={isSelected} />;
+  if (ann.type === "callout")
+    return <CalloutAnnotation annotation={ann} screenPos={screenPos} viewport={viewport} isSelected={isSelected} />;
+  if (ann.type === "shape")
+    return <ShapeAnnotation annotation={ann} screenPos={screenPos} viewport={viewport} isSelected={isSelected} />;
+  if (ann.type === "pencil")
+    return <PencilAnnotation annotation={ann} screenPos={screenPos} viewport={viewport} isSelected={isSelected} />;
+  if (ann.type === "image")
+    return <ImageAnnotation annotation={ann} screenPos={screenPos} isSelected={isSelected} />;
+  return null;
+});
 
 export function AnnotationLayer({ pageIndex, viewport }: Props) {
-  const { annotations, activeTool, addAnnotation, setSelectedId, selectedId } = useAnnotationStore();
+  const activeTool = useAnnotationStore(s => s.activeTool);
+  const selectedId = useAnnotationStore(s => s.selectedId);
+  const addAnnotation = useAnnotationStore(s => s.addAnnotation);
+  const setSelectedId = useAnnotationStore(s => s.setSelectedId);
+  // Subscribe only to this page's annotations — other pages changing won't re-render this layer.
+  const pageAnnotations = useAnnotationStore(s => s.annotations.get(pageIndex) ?? EMPTY_ANNOTATIONS);
+
   const layerRef = useRef<HTMLDivElement>(null);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
   const [preview, setPreview] = useState<{ sx: number; sy: number; ex: number; ey: number } | null>(null);
@@ -34,8 +74,6 @@ export function AnnotationLayer({ pageIndex, viewport }: Props) {
   // Polygon state
   const [polygonPts, setPolygonPts] = useState<[number, number][] | null>(null);
   const [polygonCursor, setPolygonCursor] = useState<[number, number] | null>(null);
-
-  const pageAnnotations = annotations.get(pageIndex) ?? [];
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -344,109 +382,14 @@ export function AnnotationLayer({ pageIndex, viewport }: Props) {
         userSelect: "none",
       }}
     >
-      {pageAnnotations.map((ann) => {
-        const screenPos = pdfRectToScreen(ann.pdfRect, viewport);
-        const isSelected = ann.id === selectedId;
-
-        if (ann.type === "textbox") {
-          return (
-            <TextBoxAnnotation
-              key={ann.id}
-              annotation={ann}
-              screenPos={screenPos}
-              viewport={viewport}
-              isSelected={isSelected}
-            />
-          );
-        }
-        if (ann.type === "highlight" || ann.type === "underline" || ann.type === "strikethrough") {
-          return (
-            <HighlightAnnotation
-              key={ann.id}
-              annotation={ann}
-              viewport={viewport}
-              isSelected={isSelected}
-            />
-          );
-        }
-        if (ann.type === "signature") {
-          return (
-            <SignatureAnnotation
-              key={ann.id}
-              annotation={ann}
-              screenPos={screenPos}
-              viewport={viewport}
-              isSelected={isSelected}
-            />
-          );
-        }
-        if (ann.type === "stamp") {
-          return (
-            <StampAnnotation
-              key={ann.id}
-              annotation={ann}
-              screenPos={screenPos}
-              viewport={viewport}
-              isSelected={isSelected}
-            />
-          );
-        }
-        if (ann.type === "stickynote") {
-          return (
-            <StickyNoteAnnotation
-              key={ann.id}
-              annotation={ann}
-              screenPos={screenPos}
-              viewport={viewport}
-              isSelected={isSelected}
-            />
-          );
-        }
-        if (ann.type === "callout") {
-          return (
-            <CalloutAnnotation
-              key={ann.id}
-              annotation={ann}
-              screenPos={screenPos}
-              viewport={viewport}
-              isSelected={isSelected}
-            />
-          );
-        }
-        if (ann.type === "shape") {
-          return (
-            <ShapeAnnotation
-              key={ann.id}
-              annotation={ann}
-              screenPos={screenPos}
-              viewport={viewport}
-              isSelected={isSelected}
-            />
-          );
-        }
-        if (ann.type === "pencil") {
-          return (
-            <PencilAnnotation
-              key={ann.id}
-              annotation={ann}
-              screenPos={screenPos}
-              viewport={viewport}
-              isSelected={isSelected}
-            />
-          );
-        }
-        if (ann.type === "image") {
-          return (
-            <ImageAnnotation
-              key={ann.id}
-              annotation={ann}
-              screenPos={screenPos}
-              isSelected={isSelected}
-            />
-          );
-        }
-        return null;
-      })}
+      {pageAnnotations.map((ann) => (
+        <AnnotationItem
+          key={ann.id}
+          ann={ann}
+          viewport={viewport}
+          isSelected={ann.id === selectedId}
+        />
+      ))}
 
       {/* Live drag preview for shape tools */}
       {preview && SHAPE_TOOLS.has(activeTool) && (

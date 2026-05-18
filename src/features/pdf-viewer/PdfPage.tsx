@@ -17,9 +17,12 @@ export function PdfPage({ page, pageIndex, zoom, isVisible }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const renderTaskRef = useRef<ReturnType<PDFPageProxy["render"]> | null>(null);
+  const prevZoomRef = useRef(zoom);
   const [viewport, setViewport] = useState<PageViewport | null>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const { activeTool, selectedId, setSelectedId } = useAnnotationStore();
+  const activeTool = useAnnotationStore(s => s.activeTool);
+  const selectedId = useAnnotationStore(s => s.selectedId);
+  const setSelectedId = useAnnotationStore(s => s.setSelectedId);
 
   // Text layer is enabled when in text-selection modes (also handles double-click-to-edit in select mode)
   const textLayerEnabled =
@@ -90,11 +93,21 @@ export function PdfPage({ page, pageIndex, zoom, isVisible }: Props) {
   }, [page, zoom, isVisible]);
 
   useEffect(() => {
-    render();
+    const isZoomChange = prevZoomRef.current !== zoom;
+    prevZoomRef.current = zoom;
+
+    if (!isZoomChange) {
+      render();
+      return () => { renderTaskRef.current?.cancel(); };
+    }
+
+    // Debounce zoom changes: rapid wheel/pinch events collapse into one render.
+    const timer = setTimeout(render, 80);
     return () => {
+      clearTimeout(timer);
       renderTaskRef.current?.cancel();
     };
-  }, [render]);
+  }, [render, zoom]);
 
   return (
     <div
