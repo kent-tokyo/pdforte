@@ -7,7 +7,8 @@ import { useAnnotationStore } from "../../store/annotationStore";
 import { Dialog, cancelBtnStyle, actionBtnStyle } from "../../components/Dialog";
 
 export function WatermarkDialog() {
-  const { watermarkDialogOpen, setWatermarkDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "watermark");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { originalBytes, filePath } = usePdfStore();
   const { clearAnnotations } = useAnnotationStore();
   const { loadFromBytes } = usePdfjs();
@@ -21,9 +22,9 @@ export function WatermarkDialog() {
   const [status, setStatus] = useState<string | null>(null);
 
   const close = useCallback(() => {
-    setWatermarkDialogOpen(false);
+    setDialogOpen(null);
     setStatus(null);
-  }, [setWatermarkDialogOpen]);
+  }, [setDialogOpen]);
 
   const handleApply = useCallback(async () => {
     if (!originalBytes || !filePath || !text.trim()) return;
@@ -51,7 +52,7 @@ export function WatermarkDialog() {
   }, [originalBytes, filePath, text, fontSize, color, opacity, rotation, clearAnnotations, loadFromBytes, close]);
 
   return (
-    <Dialog isOpen={watermarkDialogOpen} onClose={close} title="ウォーターマークを追加">
+    <Dialog isOpen={isOpen} onClose={close} title="ウォーターマークを追加">
       <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
         <div>
           <label style={labelStyle}>テキスト</label>

@@ -7,7 +7,8 @@ import { usePdfjs } from "../pdf-viewer/usePdfjs";
 import { Dialog, cancelBtnStyle, actionBtnStyle } from "../../components/Dialog";
 
 export function UnlockPdfDialog() {
-  const { unlockDialogOpen, setUnlockDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "unlock");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { originalBytes, filePath } = usePdfStore();
   const { clearAnnotations } = useAnnotationStore();
   const { loadFromBytes } = usePdfjs();
@@ -17,13 +18,13 @@ export function UnlockPdfDialog() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (unlockDialogOpen) {
+    if (isOpen) {
       setPassword(""); setError(null);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [unlockDialogOpen]);
+  }, [isOpen]);
 
-  const close = useCallback(() => setUnlockDialogOpen(false), [setUnlockDialogOpen]);
+  const close = useCallback(() => setDialogOpen(null), [setDialogOpen]);
 
   const handleUnlock = useCallback(async () => {
     if (!originalBytes) return;
@@ -58,7 +59,7 @@ export function UnlockPdfDialog() {
   }, [handleUnlock, close]);
 
   return (
-    <Dialog isOpen={unlockDialogOpen} onClose={close} title="🔓 パスワードを解除" width={380}>
+    <Dialog isOpen={isOpen} onClose={close} title="🔓 パスワードを解除" width={380}>
       <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 }}>
           PDFの暗号化を解除して保存します。<br />

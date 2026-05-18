@@ -9,14 +9,15 @@ import { Dialog, cancelBtnStyle, actionBtnStyle } from "../../components/Dialog"
 interface FileEntry { path: string; name: string; bytes: Uint8Array | null }
 
 export function MergePdfDialog() {
-  const { mergeDialogOpen, setMergeDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "merge");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { clearAnnotations } = useAnnotationStore();
   const { loadFromBytes } = usePdfjs();
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const close = useCallback(() => { setMergeDialogOpen(false); setFiles([]); setStatus(null); }, [setMergeDialogOpen]);
+  const close = useCallback(() => { setDialogOpen(null); setFiles([]); setStatus(null); }, [setDialogOpen]);
 
   const addFiles = useCallback(async () => {
     const paths = await invoke<string[]>("open_files_dialog");
@@ -57,7 +58,7 @@ export function MergePdfDialog() {
   }, [files, clearAnnotations, loadFromBytes, close]);
 
   return (
-    <Dialog isOpen={mergeDialogOpen} onClose={close} title="PDF 結合">
+    <Dialog isOpen={isOpen} onClose={close} title="PDF 結合">
       <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
         <button onClick={addFiles} style={addBtnStyle}>+ PDFファイルを追加</button>
         <div style={{ maxHeight: 280, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4 }}>

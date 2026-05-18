@@ -23,7 +23,8 @@ const FORMAT_EXAMPLES = [
 ];
 
 export function PageNumbersDialog() {
-  const { pageNumbersDialogOpen, setPageNumbersDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "pageNumbers");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { originalBytes, filePath, numPages } = usePdfStore();
   const { clearAnnotations } = useAnnotationStore();
   const { loadFromBytes } = usePdfjs();
@@ -37,9 +38,9 @@ export function PageNumbersDialog() {
   const [status, setStatus] = useState<string | null>(null);
 
   const close = useCallback(() => {
-    setPageNumbersDialogOpen(false);
+    setDialogOpen(null);
     setStatus(null);
-  }, [setPageNumbersDialogOpen]);
+  }, [setDialogOpen]);
 
   const handleApply = useCallback(async () => {
     if (!originalBytes || !filePath) return;
@@ -69,7 +70,7 @@ export function PageNumbersDialog() {
   }, [originalBytes, filePath, format, fontSize, color, position, margin, numPages, clearAnnotations, loadFromBytes, close]);
 
   return (
-    <Dialog isOpen={pageNumbersDialogOpen} onClose={close} title="ページ番号を追加">
+    <Dialog isOpen={isOpen} onClose={close} title="ページ番号を追加">
       <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
         <div>
           <label style={labelStyle}>フォーマット</label>

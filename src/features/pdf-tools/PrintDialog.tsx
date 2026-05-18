@@ -14,7 +14,8 @@ const PAGE_SIZES: Record<PageSize, { w: number; h: number }> = {
 };
 
 export function PrintDialog() {
-  const { printDialogOpen, setPrintDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "print");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { numPages, currentPage } = usePdfStore();
 
   const [pageMode, setPageMode] = useState<"all" | "current" | "range">("all");
@@ -23,7 +24,7 @@ export function PrintDialog() {
   const [orientation, setOrientation] = useState<Orientation>("portrait");
   const [copies, setCopies] = useState(1);
 
-  const handleClose = () => setPrintDialogOpen(false);
+  const handleClose = () => setDialogOpen(null);
 
   const handlePrint = useCallback(() => {
     const { w, h } = PAGE_SIZES[pageSize];
@@ -69,7 +70,7 @@ export function PrintDialog() {
   }, [pageMode, currentPage, rangeInput, numPages, pageSize, orientation, copies]);
 
   return (
-    <Dialog isOpen={printDialogOpen} onClose={handleClose} title="🖨 印刷" width={420}>
+    <Dialog isOpen={isOpen} onClose={handleClose} title="🖨 印刷" width={420}>
       <div style={{ padding: 24 }}>
         {/* Page range */}
         <div style={{ marginBottom: 16 }}>

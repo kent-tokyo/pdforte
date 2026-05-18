@@ -10,18 +10,19 @@ function basename(path: string) {
 }
 
 export function ScannerDialog() {
-  const { scannerDialogOpen, setScannerDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "scanner");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [pageSize, setPageSize] = useState<PageSize>("original");
   const [status, setStatus] = useState<"idle" | "busy" | "done" | "error">("idle");
   const [msg, setMsg] = useState("");
 
   const close = useCallback(() => {
-    setScannerDialogOpen(false);
+    setDialogOpen(null);
     setImagePaths([]);
     setStatus("idle");
     setMsg("");
-  }, [setScannerDialogOpen]);
+  }, [setDialogOpen]);
 
   const addImages = useCallback(async () => {
     const paths = await invoke<string[]>("open_files_dialog");
@@ -78,7 +79,7 @@ export function ScannerDialog() {
   }, [imagePaths, pageSize]);
 
   return (
-    <Dialog isOpen={scannerDialogOpen} onClose={close} title="📷 PDFスキャナー（画像→PDF）" width={500}>
+    <Dialog isOpen={isOpen} onClose={close} title="📷 PDFスキャナー（画像→PDF）" width={500}>
       <div style={bodyStyle}>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button onClick={addImages} style={actionBtnStyle}>＋ 画像を追加</button>

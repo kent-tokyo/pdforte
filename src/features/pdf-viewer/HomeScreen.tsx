@@ -53,7 +53,8 @@ function formatRelativeTime(ts: number): string {
 export function HomeScreen() {
   const { loadFromBytes } = usePdfjs();
   const { recentFiles, remove } = useRecentFilesStore();
-  const { setSidebarOpen, setSidebarTab, setSignatureDialogOpen } = useUiStore();
+  const { setSidebarOpen, setSidebarTab } = useUiStore();
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { setActiveTool } = useAnnotationStore();
 
   const applyToolAction = useCallback((action: ToolAction) => {
@@ -64,7 +65,7 @@ export function HomeScreen() {
         setActiveTool("highlight");
         break;
       case "signature":
-        setSignatureDialogOpen(true);
+        setDialogOpen("signature");
         break;
       case "edit":
         setActiveTool("select");
@@ -74,7 +75,7 @@ export function HomeScreen() {
         setSidebarTab("thumbnails");
         break;
     }
-  }, [setSidebarOpen, setSidebarTab, setActiveTool, setSignatureDialogOpen]);
+  }, [setSidebarOpen, setSidebarTab, setActiveTool, setDialogOpen]);
 
   const openFileDialog = useCallback(async () => {
     try {

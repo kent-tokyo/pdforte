@@ -5,7 +5,8 @@ import { usePdfStore } from "../../store/pdfStore";
 import { Dialog, cancelBtnStyle, actionBtnStyle } from "../../components/Dialog";
 
 export function MetadataDialog() {
-  const { metadataDialogOpen, setMetadataDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "metadata");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { originalBytes, filePath } = usePdfStore();
 
   const [title, setTitle] = useState("");
@@ -17,7 +18,7 @@ export function MetadataDialog() {
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
-    if (!metadataDialogOpen || !originalBytes) return;
+    if (!isOpen || !originalBytes) return;
     (async () => {
       try {
         const meta = await invoke<{
@@ -34,13 +35,13 @@ export function MetadataDialog() {
         setCreator(meta.creator ?? "");
       } catch {}
     })();
-  }, [metadataDialogOpen, originalBytes]);
+  }, [isOpen, originalBytes]);
 
   const close = useCallback(() => {
-    setMetadataDialogOpen(false);
+    setDialogOpen(null);
     setStatus("idle");
     setMsg("");
-  }, [setMetadataDialogOpen]);
+  }, [setDialogOpen]);
 
   const handleClear = () => { setTitle(""); setAuthor(""); setSubject(""); setKeywords(""); setCreator(""); };
 
@@ -70,7 +71,7 @@ export function MetadataDialog() {
   ];
 
   return (
-    <Dialog isOpen={metadataDialogOpen} onClose={close} title="📋 メタデータ編集" width={460}>
+    <Dialog isOpen={isOpen} onClose={close} title="📋 メタデータ編集" width={460}>
       <div style={bodyStyle}>
         {fields.map(({ label, value, set }) => (
           <div key={label}>

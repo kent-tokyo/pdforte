@@ -7,14 +7,15 @@ import { rotatePdfPages } from "./pdfOperations";
 import { Dialog, cancelBtnStyle, actionBtnStyle } from "../../components/Dialog";
 
 export function RotatePagesDialog() {
-  const { rotateDialogOpen, setRotateDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "rotate");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { originalBytes, filePath, numPages } = usePdfStore();
   const { clearAnnotations } = useAnnotationStore();
   const { loadFromBytes } = usePdfjs();
   const [rotations, setRotations] = useState<Map<number, number>>(new Map());
   const [busy, setBusy] = useState(false);
 
-  const close = useCallback(() => { setRotateDialogOpen(false); setRotations(new Map()); }, [setRotateDialogOpen]);
+  const close = useCallback(() => { setDialogOpen(null); setRotations(new Map()); }, [setDialogOpen]);
 
   const rotate = useCallback((pageIdx: number, delta: number) => {
     setRotations((prev) => {
@@ -56,7 +57,7 @@ export function RotatePagesDialog() {
   const pages = Array.from({ length: numPages }, (_, i) => i);
 
   return (
-    <Dialog isOpen={rotateDialogOpen} onClose={close} title="ページ回転" width={380}>
+    <Dialog isOpen={isOpen} onClose={close} title="ページ回転" width={380}>
       <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={() => rotatAll(90)} style={allBtnStyle}>全ページ 90° 右回転</button>

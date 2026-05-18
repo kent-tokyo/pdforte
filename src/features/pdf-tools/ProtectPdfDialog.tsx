@@ -5,7 +5,8 @@ import { usePdfStore } from "../../store/pdfStore";
 import { Dialog, cancelBtnStyle, actionBtnStyle } from "../../components/Dialog";
 
 export function ProtectPdfDialog() {
-  const { protectDialogOpen, setProtectDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "protect");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { filePath } = usePdfStore();
   const [userPw, setUserPw] = useState("");
   const [ownerPw, setOwnerPw] = useState("");
@@ -15,10 +16,10 @@ export function ProtectPdfDialog() {
   const [busy, setBusy] = useState(false);
 
   const close = useCallback(() => {
-    setProtectDialogOpen(false);
+    setDialogOpen(null);
     setUserPw(""); setOwnerPw(""); setStatus(null);
     setAllowPrint(true); setAllowCopy(false);
-  }, [setProtectDialogOpen]);
+  }, [setDialogOpen]);
 
   const handleApply = useCallback(async () => {
     if (!filePath) { setStatus("PDFが開いていません"); return; }
@@ -45,7 +46,7 @@ export function ProtectPdfDialog() {
   }, [filePath, userPw, ownerPw, allowPrint, allowCopy]);
 
   return (
-    <Dialog isOpen={protectDialogOpen} onClose={close} title="🔒 PDFを保護" width={400}>
+    <Dialog isOpen={isOpen} onClose={close} title="🔒 PDFを保護" width={400}>
       <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
         <div>
           <label style={labelStyle}>ユーザーパスワード (閲覧時に必要)</label>

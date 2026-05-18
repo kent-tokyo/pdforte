@@ -16,7 +16,8 @@ const OFFICE_FORMATS = [
 ];
 
 export function ConvertDialog() {
-  const { convertDialogOpen, setConvertDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "convert");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { filePath } = usePdfStore();
   const [tab, setTab] = useState<Tab>("pdf-to-office");
   const [officeFormat, setOfficeFormat] = useState("docx");
@@ -26,14 +27,14 @@ export function ConvertDialog() {
   const [loStatus, setLoStatus] = useState<LibreOfficeStatus | null>(null);
 
   useEffect(() => {
-    if (!convertDialogOpen) return;
+    if (!isOpen) return;
     invoke<LibreOfficeStatus>("check_libreoffice").then(setLoStatus).catch(() => {});
-  }, [convertDialogOpen]);
+  }, [isOpen]);
 
   const close = useCallback(() => {
-    setConvertDialogOpen(false);
+    setDialogOpen(null);
     setStatus(null); setImageFiles([]);
-  }, [setConvertDialogOpen]);
+  }, [setDialogOpen]);
 
   // PDF → Office
   const handlePdfToOffice = useCallback(async () => {
@@ -98,7 +99,7 @@ export function ConvertDialog() {
   }, [imageFiles]);
 
   return (
-    <Dialog isOpen={convertDialogOpen} onClose={close} title="変換">
+    <Dialog isOpen={isOpen} onClose={close} title="変換">
         {/* Tabs */}
         <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
           {([["pdf-to-office", "PDF → Office"], ["office-to-pdf", "Office → PDF"], ["image-to-pdf", "画像 → PDF"]] as [Tab, string][]).map(([id, label]) => (

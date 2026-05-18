@@ -11,14 +11,15 @@ interface SigInfo {
 }
 
 export function SignatureVerifyDialog() {
-  const { signatureVerifyDialogOpen, setSignatureVerifyDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "signatureVerify");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { originalBytes } = usePdfStore();
 
   const [sigs, setSigs] = useState<SigInfo[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!signatureVerifyDialogOpen || !originalBytes) return;
+    if (!isOpen || !originalBytes) return;
     setLoading(true);
     setSigs([]);
     (async () => {
@@ -37,12 +38,12 @@ export function SignatureVerifyDialog() {
       } catch {}
       setLoading(false);
     })();
-  }, [signatureVerifyDialogOpen, originalBytes]);
+  }, [isOpen, originalBytes]);
 
-  const close = () => setSignatureVerifyDialogOpen(false);
+  const close = () => setDialogOpen(null);
 
   return (
-    <Dialog isOpen={signatureVerifyDialogOpen} onClose={close} title="🔐 署名の検証">
+    <Dialog isOpen={isOpen} onClose={close} title="🔐 署名の検証">
       <div style={bodyStyle}>
         {loading ? (
           <p style={{ color: "var(--text-muted)", fontSize: 13 }}>確認中...</p>

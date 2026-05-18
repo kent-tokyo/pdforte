@@ -9,7 +9,8 @@ function basename(path: string) {
 }
 
 export function SanitizeDialog() {
-  const { sanitizeDialogOpen, setSanitizeDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "sanitize");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { originalBytes, filePath } = usePdfStore();
 
   const [removeJS, setRemoveJS] = useState(true);
@@ -19,10 +20,10 @@ export function SanitizeDialog() {
   const [msg, setMsg] = useState("");
 
   const close = useCallback(() => {
-    setSanitizeDialogOpen(false);
+    setDialogOpen(null);
     setStatus("idle");
     setMsg("");
-  }, [setSanitizeDialogOpen]);
+  }, [setDialogOpen]);
 
   const handleSanitize = useCallback(async () => {
     if (!originalBytes) return;
@@ -55,7 +56,7 @@ export function SanitizeDialog() {
   }, [originalBytes, filePath, removeJS, removeEmbedded, removeMetadata]);
 
   return (
-    <Dialog isOpen={sanitizeDialogOpen} onClose={close} title="🧹 PDF サニタイズ" width={460}>
+    <Dialog isOpen={isOpen} onClose={close} title="🧹 PDF サニタイズ" width={460}>
       <div style={bodyStyle}>
         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>
           PDFに含まれる危険なコンテンツを除去します。処理後は新しいファイルとして保存されます。

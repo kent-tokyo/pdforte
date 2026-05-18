@@ -90,7 +90,8 @@ async function extractBlocks(page: import("pdfjs-dist").PDFPageProxy): Promise<T
 }
 
 export function TranslateDialog() {
-  const { translateDialogOpen, setTranslateDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "translate");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { pdfDoc, currentPage, numPages } = usePdfStore();
   const { addAnnotation } = useAnnotationStore();
 
@@ -105,7 +106,7 @@ export function TranslateDialog() {
 
   // 設定からAPIキーと翻訳エンジンをロード
   useEffect(() => {
-    if (!translateDialogOpen) return;
+    if (!isOpen) return;
     invoke<string>("read_settings").then((json) => {
       try {
         const s = JSON.parse(json);
@@ -113,7 +114,7 @@ export function TranslateDialog() {
         if (s.translationApiKey) setApiKey(s.translationApiKey);
       } catch {}
     });
-  }, [translateDialogOpen]);
+  }, [isOpen]);
 
   const parsePageRange = useCallback((input: string): number[] => {
     const pages: number[] = [];
@@ -201,11 +202,11 @@ export function TranslateDialog() {
     setStatus("idle");
     setErrorMsg("");
     setProgress(null);
-    setTranslateDialogOpen(false);
+    setDialogOpen(null);
   };
 
   return (
-    <Dialog isOpen={translateDialogOpen} onClose={handleClose} title="PDFを翻訳" width={460}>
+    <Dialog isOpen={isOpen} onClose={handleClose} title="PDFを翻訳" width={460}>
       <div style={{ padding: 24 }}>
         {/* Engine / API key info */}
         <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16, padding: "8px 12px", background: "var(--bg-tertiary)", borderRadius: 6 }}>

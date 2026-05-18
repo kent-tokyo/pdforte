@@ -6,17 +6,18 @@ import { parsePageRanges, splitPdf } from "./pdfOperations";
 import { Dialog, cancelBtnStyle, actionBtnStyle } from "../../components/Dialog";
 
 export function SplitPdfDialog() {
-  const { splitDialogOpen, setSplitDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "split");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { originalBytes, numPages, filePath } = usePdfStore();
   const [rangeStr, setRangeStr] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const close = useCallback(() => {
-    setSplitDialogOpen(false);
+    setDialogOpen(null);
     setRangeStr("");
     setStatus(null);
-  }, [setSplitDialogOpen]);
+  }, [setDialogOpen]);
 
   const handleSplit = useCallback(async () => {
     if (!originalBytes || !filePath) return;
@@ -43,7 +44,7 @@ export function SplitPdfDialog() {
   }, [originalBytes, filePath, numPages, rangeStr]);
 
   return (
-    <Dialog isOpen={splitDialogOpen} onClose={close} title="PDF 分割" width={420}>
+    <Dialog isOpen={isOpen} onClose={close} title="PDF 分割" width={420}>
       <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
         <p style={{ fontSize: 12, color: "var(--text-secondary)" }}>
           現在のファイル: {numPages} ページ

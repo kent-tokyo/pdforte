@@ -15,13 +15,14 @@ interface Settings {
 }
 
 export function SettingsDialog() {
-  const { settingsOpen, setSettingsOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "settings");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { t } = useTranslation();
   const [settings, setSettings] = useState<Settings>({});
   const [settingsPath, setSettingsPath] = useState("");
 
   useEffect(() => {
-    if (!settingsOpen) return;
+    if (!isOpen) return;
     const load = async () => {
       try {
         const json = await invoke<string>("read_settings");
@@ -31,7 +32,7 @@ export function SettingsDialog() {
       } catch {}
     };
     load();
-  }, [settingsOpen]);
+  }, [isOpen]);
 
   const save = useCallback(async (next: Settings) => {
     setSettings(next);
@@ -51,7 +52,7 @@ export function SettingsDialog() {
   }, [settings, save]);
 
   return (
-    <Dialog isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} title={t("settings.title")} width={480}>
+    <Dialog isOpen={isOpen} onClose={() => setDialogOpen(null)} title={t("settings.title")} width={480}>
       <div style={{ padding: "16px 20px 20px", maxHeight: "70vh", overflowY: "auto" }}>
         {/* Language */}
         <div style={sectionStyle}>

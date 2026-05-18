@@ -10,7 +10,8 @@ const FORMAT_OPTIONS = ["PNG", "JPEG"] as const;
 type Format = typeof FORMAT_OPTIONS[number];
 
 export function ExportImagesDialog() {
-  const { exportImagesDialogOpen, setExportImagesDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "exportImages");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { pdfDoc, numPages, filePath } = usePdfStore();
   const [rangeStr, setRangeStr] = useState("");
   const [format, setFormat] = useState<Format>("PNG");
@@ -20,9 +21,9 @@ export function ExportImagesDialog() {
   const [progress, setProgress] = useState("");
 
   const close = useCallback(() => {
-    setExportImagesDialogOpen(false);
+    setDialogOpen(null);
     setRangeStr(""); setStatus(null); setProgress("");
-  }, [setExportImagesDialogOpen]);
+  }, [setDialogOpen]);
 
   const handleExport = useCallback(async () => {
     if (!pdfDoc) return;
@@ -59,7 +60,7 @@ export function ExportImagesDialog() {
   }, [pdfDoc, numPages, filePath, rangeStr, format, dpi]);
 
   return (
-    <Dialog isOpen={exportImagesDialogOpen} onClose={close} title="🖼 PDF → 画像エクスポート" width={420}>
+    <Dialog isOpen={isOpen} onClose={close} title="🖼 PDF → 画像エクスポート" width={420}>
       <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
         <p style={{ fontSize: 12, color: "var(--text-secondary)" }}>全 {numPages} ページ</p>
         <div>

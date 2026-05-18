@@ -8,7 +8,8 @@ import { reorderPages } from "./pdfOperations";
 import { Dialog, cancelBtnStyle, actionBtnStyle } from "../../components/Dialog";
 
 export function PageOrderDialog() {
-  const { pageOrderDialogOpen, setPageOrderDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "pageOrder");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { originalBytes, filePath, numPages } = usePdfStore();
   const { clearAnnotations } = useAnnotationStore();
   const { loadFromBytes } = usePdfjs();
@@ -16,20 +17,18 @@ export function PageOrderDialog() {
   const [busy, setBusy] = useState(false);
   const dragIdx = useRef<number | null>(null);
 
-  // Initialize order when dialog opens
-  const open = pageOrderDialogOpen;
   const initOrder = useCallback(() => {
     setOrder(Array.from({ length: numPages }, (_, i) => i));
   }, [numPages]);
 
   const close = useCallback(() => {
-    setPageOrderDialogOpen(false);
+    setDialogOpen(null);
     setOrder([]);
-  }, [setPageOrderDialogOpen]);
+  }, [setDialogOpen]);
 
   useEffect(() => {
-    if (open && numPages > 0) initOrder();
-  }, [open, numPages, initOrder]);
+    if (isOpen && numPages > 0) initOrder();
+  }, [isOpen, numPages, initOrder]);
 
   const handleDragStart = useCallback((idx: number) => {
     dragIdx.current = idx;
@@ -110,7 +109,7 @@ export function PageOrderDialog() {
   }, [originalBytes, filePath, order, clearAnnotations, loadFromBytes, close]);
 
   return (
-    <Dialog isOpen={open} onClose={close} title="ページの並び替え / 削除" width={380}>
+    <Dialog isOpen={isOpen} onClose={close} title="ページの並び替え / 削除" width={380}>
       <div style={{ padding: "12px 16px" }}>
         <p style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 8 }}>
           ドラッグまたは矢印で並び替え。✕ でページ削除。＋ でその後に白紙ページを挿入。適用後は注釈がリセットされます。

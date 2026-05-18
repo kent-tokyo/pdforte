@@ -17,7 +17,8 @@ const LANG_OPTIONS = [
 type Mode = "extract" | "textlayer";
 
 export function OcrDialog() {
-  const { ocrDialogOpen, setOcrDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "ocr");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { pdfDoc, numPages, filePath } = usePdfStore();
   const [mode, setMode] = useState<Mode>("extract");
   const [rangeStr, setRangeStr] = useState("");
@@ -28,9 +29,9 @@ export function OcrDialog() {
   const [progress, setProgress] = useState("");
 
   const close = useCallback(() => {
-    setOcrDialogOpen(false);
+    setDialogOpen(null);
     setRangeStr(""); setResult(""); setStatus(null); setProgress("");
-  }, [setOcrDialogOpen]);
+  }, [setDialogOpen]);
 
   const getPageIndices = useCallback(() => {
     if (!rangeStr.trim()) return Array.from({ length: numPages }, (_, i) => i);
@@ -103,7 +104,7 @@ export function OcrDialog() {
   }, [result, filePath]);
 
   return (
-    <Dialog isOpen={ocrDialogOpen} onClose={close} title="🔍 PDF OCR" width={520}>
+    <Dialog isOpen={isOpen} onClose={close} title="🔍 PDF OCR" width={520}>
       <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
         {/* Mode tabs */}
         <div style={{ display: "flex", gap: 0, border: "1px solid var(--border)", borderRadius: 6, overflow: "hidden" }}>

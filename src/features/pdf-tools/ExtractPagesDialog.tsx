@@ -6,17 +6,18 @@ import { parsePageRanges } from "./pdfOperations";
 import { Dialog, cancelBtnStyle, actionBtnStyle } from "../../components/Dialog";
 
 export function ExtractPagesDialog() {
-  const { extractPagesDialogOpen, setExtractPagesDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "extractPages");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { originalBytes, numPages, filePath } = usePdfStore();
   const [rangeStr, setRangeStr] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const close = useCallback(() => {
-    setExtractPagesDialogOpen(false);
+    setDialogOpen(null);
     setRangeStr("");
     setStatus(null);
-  }, [setExtractPagesDialogOpen]);
+  }, [setDialogOpen]);
 
   const handleExtract = useCallback(async () => {
     if (!originalBytes || !filePath) return;
@@ -51,7 +52,7 @@ export function ExtractPagesDialog() {
   }, [originalBytes, filePath, numPages, rangeStr]);
 
   return (
-    <Dialog isOpen={extractPagesDialogOpen} onClose={close} title="ページを抽出" width={420}>
+    <Dialog isOpen={isOpen} onClose={close} title="ページを抽出" width={420}>
       <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>
           現在のファイル: {numPages} ページ

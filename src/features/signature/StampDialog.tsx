@@ -5,7 +5,8 @@ import { usePdfStore } from "../../store/pdfStore";
 import { Dialog } from "../../components/Dialog";
 
 export function StampDialog() {
-  const { stampDialogOpen, setStampDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "stamp");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { addAnnotation } = useAnnotationStore();
   const { currentPage } = usePdfStore();
   const [preview, setPreview] = useState<string | null>(null);
@@ -20,9 +21,9 @@ export function StampDialog() {
   }, []);
 
   const close = useCallback(() => {
-    setStampDialogOpen(false);
+    setDialogOpen(null);
     setPreview(null);
-  }, [setStampDialogOpen]);
+  }, [setDialogOpen]);
 
   const handleConfirm = useCallback(() => {
     if (!preview) return;
@@ -33,12 +34,12 @@ export function StampDialog() {
       dataUrl: preview,
       opacity: 1,
     });
-    setStampDialogOpen(false);
+    setDialogOpen(null);
     setPreview(null);
-  }, [preview, currentPage, addAnnotation, setStampDialogOpen]);
+  }, [preview, currentPage, addAnnotation, setDialogOpen]);
 
   return (
-    <Dialog isOpen={stampDialogOpen} onClose={close} title="スタンプ画像を選択" width={400}>
+    <Dialog isOpen={isOpen} onClose={close} title="スタンプ画像を選択" width={400}>
       <div style={{ padding: 24 }}>
         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFile} style={{ marginBottom: 16 }} />
         {preview && (

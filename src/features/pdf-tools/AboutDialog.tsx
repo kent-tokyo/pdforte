@@ -2,9 +2,10 @@ import { useUiStore } from "../../store/uiStore";
 import { Dialog } from "../../components/Dialog";
 
 export function AboutDialog() {
-  const { aboutOpen, setAboutOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "about");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   return (
-    <Dialog isOpen={aboutOpen} onClose={() => setAboutOpen(false)} title="pdforte について" width={360}>
+    <Dialog isOpen={isOpen} onClose={() => setDialogOpen(null)} title="pdforte について" width={360}>
       <div style={{ padding: "20px 20px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 40 }}>📄</span>
@@ -31,7 +32,7 @@ export function AboutDialog() {
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <button
-            onClick={() => setAboutOpen(false)}
+            onClick={() => setDialogOpen(null)}
             style={{ padding: "6px 20px", fontSize: 12, borderRadius: 4, cursor: "pointer", background: "var(--accent)", border: "none", color: "#fff" }}
           >
             閉じる

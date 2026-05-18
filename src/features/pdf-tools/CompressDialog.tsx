@@ -21,7 +21,8 @@ function fmt(bytes: number) {
 }
 
 export function CompressDialog() {
-  const { compressDialogOpen, setCompressDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "compress");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { originalBytes, filePath } = usePdfStore();
   const { clearAnnotations } = useAnnotationStore();
   const { loadFromBytes } = usePdfjs();
@@ -33,11 +34,11 @@ export function CompressDialog() {
   const [result, setResult] = useState<{ bytes: Uint8Array; size: number } | null>(null);
 
   const close = useCallback(() => {
-    setCompressDialogOpen(false);
+    setDialogOpen(null);
     setResult(null);
     setBusy(false);
     setError(null);
-  }, [setCompressDialogOpen]);
+  }, [setDialogOpen]);
 
   const handleCompress = useCallback(async () => {
     if (!originalBytes) return;
@@ -80,7 +81,7 @@ export function CompressDialog() {
   const ratio = result ? Math.round((1 - result.size / origSize) * 100) : null;
 
   return (
-    <Dialog isOpen={compressDialogOpen} onClose={close} title="PDF を圧縮">
+    <Dialog isOpen={isOpen} onClose={close} title="PDF を圧縮">
       <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
 
         {/* Current size */}

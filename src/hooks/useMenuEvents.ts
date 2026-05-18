@@ -69,12 +69,12 @@ export function useMenuEvents() {
       );
 
       // ファイルを結合
-      push(await listen("menu:merge", () => ref.current.uiStore.setMergeDialogOpen(true)));
+      push(await listen("menu:merge", () => ref.current.uiStore.setDialogOpen("merge")));
       // Word/Excel/PowerPoint に変換
-      push(await listen("menu:convert", () => ref.current.uiStore.setConvertDialogOpen(true)));
-      push(await listen("menu:compress", () => ref.current.uiStore.setCompressDialogOpen(true)));
+      push(await listen("menu:convert", () => ref.current.uiStore.setDialogOpen("convert")));
+      push(await listen("menu:compress", () => ref.current.uiStore.setDialogOpen("compress")));
       // パスワードを保護
-      push(await listen("menu:protect", () => ref.current.uiStore.setProtectDialogOpen(true)));
+      push(await listen("menu:protect", () => ref.current.uiStore.setDialogOpen("protect")));
       // 簡易検索 → 検索サイドバーを開く
       push(
         await listen("menu:find", () => {
@@ -93,7 +93,7 @@ export function useMenuEvents() {
       push(
         await listen("menu:properties", () => {
           if (!ref.current.pdfStore.pdfDoc) return;
-          ref.current.uiStore.setMetadataDialogOpen(true);
+          ref.current.uiStore.setDialogOpen("metadata");
         })
       );
 
@@ -129,10 +129,10 @@ export function useMenuEvents() {
           console.error("Image insert failed:", err);
         }
       }));
-      push(await listen("menu:delete-pages", () => ref.current.uiStore.setPageOrderDialogOpen(true)));
-      push(await listen("menu:rotate-pages", () => ref.current.uiStore.setRotateDialogOpen(true)));
-      push(await listen("menu:organize-pages", () => ref.current.uiStore.setPageOrderDialogOpen(true)));
-      push(await listen("menu:ocr", () => ref.current.uiStore.setOcrDialogOpen(true)));
+      push(await listen("menu:delete-pages", () => ref.current.uiStore.setDialogOpen("pageOrder")));
+      push(await listen("menu:rotate-pages", () => ref.current.uiStore.setDialogOpen("rotate")));
+      push(await listen("menu:organize-pages", () => ref.current.uiStore.setDialogOpen("pageOrder")));
+      push(await listen("menu:ocr", () => ref.current.uiStore.setDialogOpen("ocr")));
       push(
         await listen("menu:print", () => {
           window.print();
@@ -198,14 +198,14 @@ export function useMenuEvents() {
       );
 
       push(
-        await listen("menu:signature", () => ref.current.uiStore.setSignatureDialogOpen(true))
+        await listen("menu:signature", () => ref.current.uiStore.setDialogOpen("signature"))
       );
       push(
-        await listen("menu:stamp", () => ref.current.uiStore.setStampDialogOpen(true))
+        await listen("menu:stamp", () => ref.current.uiStore.setDialogOpen("stamp"))
       );
 
       push(
-        await listen("menu:about", () => ref.current.uiStore.setAboutOpen(true))
+        await listen("menu:about", () => ref.current.uiStore.setDialogOpen("about"))
       );
     };
 

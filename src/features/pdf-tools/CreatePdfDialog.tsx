@@ -224,11 +224,12 @@ function TextTab() {
 // ── Main Dialog ───────────────────────────────────────────────────────────────
 
 export function CreatePdfDialog() {
-  const { createPdfDialogOpen, setCreatePdfDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "createPdf");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const [tab, setTab] = useState<Tab>("image");
 
   return (
-    <Dialog isOpen={createPdfDialogOpen} onClose={() => setCreatePdfDialogOpen(false)} title="📄 PDFを作成" width={520}>
+    <Dialog isOpen={isOpen} onClose={() => setDialogOpen(null)} title="📄 PDFを作成" width={520}>
       {/* Tab bar */}
       <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
         {([["image", "🖼 画像から"], ["text", "📝 テキストから"]] as [Tab, string][]).map(([t, label]) => (

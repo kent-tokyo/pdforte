@@ -8,7 +8,8 @@ import { embedAnnotationsAndSave } from "../annotations/savePipeline";
 import { Dialog, cancelBtnStyle, actionBtnStyle } from "../../components/Dialog";
 
 export function FlattenDialog() {
-  const { flattenDialogOpen, setFlattenDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "flatten");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { filePath, originalBytes } = usePdfStore();
   const { annotations, clearAnnotations } = useAnnotationStore();
   const { loadFromBytes } = usePdfjs();
@@ -17,10 +18,10 @@ export function FlattenDialog() {
   const [confirmOverwrite, setConfirmOverwrite] = useState(false);
 
   const close = useCallback(() => {
-    setFlattenDialogOpen(false);
+    setDialogOpen(null);
     setError(null);
     setConfirmOverwrite(false);
-  }, [setFlattenDialogOpen]);
+  }, [setDialogOpen]);
 
   const handleFlatten = useCallback(async (saveAs: boolean) => {
     if (!originalBytes || !filePath) return;
@@ -55,7 +56,7 @@ export function FlattenDialog() {
   }, [originalBytes, filePath, annotations, loadFromBytes, clearAnnotations, close]);
 
   return (
-    <Dialog isOpen={flattenDialogOpen} onClose={close} title="📋 PDFをフラット化" width={420}>
+    <Dialog isOpen={isOpen} onClose={close} title="📋 PDFをフラット化" width={420}>
       <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
           すべての注釈を PDF に永久に焼き込みます。<br />

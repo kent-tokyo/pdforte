@@ -48,9 +48,7 @@ export function Toolbar() {
   const redo = useAnnotationStore(s => s.redo);
   const undoCount = useAnnotationStore(s => s.undoStack.length);
   const redoCount = useAnnotationStore(s => s.redoStack.length);
-  const setSignatureDialogOpen = useUiStore(s => s.setSignatureDialogOpen);
-  const setStampDialogOpen = useUiStore(s => s.setStampDialogOpen);
-  const setSettingsOpen = useUiStore(s => s.setSettingsOpen);
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { loadFromBytes } = usePdfjs();
   const { save } = useSavePdf();
 
@@ -68,15 +66,15 @@ export function Toolbar() {
 
   const handleToolClick = useCallback((tool: AnnotationTool) => {
     if (tool === "signature") {
-      setSignatureDialogOpen(true);
+      setDialogOpen("signature");
       return;
     }
     if (tool === "stamp") {
-      setStampDialogOpen(true);
+      setDialogOpen("stamp");
       return;
     }
     setActiveTool(tool);
-  }, [setActiveTool, setSignatureDialogOpen, setStampDialogOpen]);
+  }, [setActiveTool, setDialogOpen]);
 
   const handleImageInsert = useCallback(async () => {
     try {
@@ -216,7 +214,7 @@ export function Toolbar() {
 
       {/* Settings (right) */}
       <div style={{ marginLeft: "auto" }}>
-        <button onClick={() => setSettingsOpen(true)} title="設定" style={btnStyle}>⚙</button>
+        <button onClick={() => setDialogOpen("settings")} title="設定" style={btnStyle}>⚙</button>
       </div>
     </div>
   );

@@ -5,7 +5,8 @@ import { usePdfStore } from "../../store/pdfStore";
 import { Dialog } from "../../components/Dialog";
 
 export function SignatureDialog() {
-  const { signatureDialogOpen, setSignatureDialogOpen } = useUiStore();
+  const isOpen = useUiStore(s => s.openDialog === "signature");
+  const setDialogOpen = useUiStore(s => s.setDialogOpen);
   const { addAnnotation } = useAnnotationStore();
   const { currentPage } = usePdfStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -60,12 +61,12 @@ export function SignatureDialog() {
       pdfRect: { x: 100, y: 100, width: 200, height: 80 },
       dataUrl,
     });
-    setSignatureDialogOpen(false);
+    setDialogOpen(null);
     clearCanvas();
-  }, [currentPage, addAnnotation, setSignatureDialogOpen, clearCanvas]);
+  }, [currentPage, addAnnotation, setDialogOpen, clearCanvas]);
 
   return (
-    <Dialog isOpen={signatureDialogOpen} onClose={() => setSignatureDialogOpen(false)} title="署名を描く" width={480}>
+    <Dialog isOpen={isOpen} onClose={() => setDialogOpen(null)} title="署名を描く" width={480}>
       <div style={{ padding: 24 }}>
         <canvas
           ref={canvasRef}
@@ -82,7 +83,7 @@ export function SignatureDialog() {
           <button onClick={clearCanvas} style={{ padding: "6px 16px", border: "1px solid var(--border)", borderRadius: 4 }}>
             クリア
           </button>
-          <button onClick={() => setSignatureDialogOpen(false)} style={{ padding: "6px 16px", border: "1px solid var(--border)", borderRadius: 4 }}>
+          <button onClick={() => setDialogOpen(null)} style={{ padding: "6px 16px", border: "1px solid var(--border)", borderRadius: 4 }}>
             キャンセル
           </button>
           <button
