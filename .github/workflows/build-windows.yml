@@ -1,4 +1,4 @@
-name: Build Windows Installer
+name: Build Installers
 
 on:
   workflow_dispatch:
@@ -12,7 +12,6 @@ permissions:
 jobs:
   build-windows:
     runs-on: windows-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,14 +48,14 @@ jobs:
           }
           Compress-Archive -Path $items -DestinationPath "pdforte-portable-windows.zip"
 
-      - name: Upload NSIS installer (.exe)
+      - name: Upload NSIS installer
         uses: actions/upload-artifact@v4
         with:
           name: pdforte-windows-setup
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
           if-no-files-found: warn
 
-      - name: Upload MSI installer (.msi)
+      - name: Upload MSI installer
         uses: actions/upload-artifact@v4
         with:
           name: pdforte-windows-msi
@@ -70,7 +69,7 @@ jobs:
           path: pdforte-portable-windows.zip
           if-no-files-found: warn
 
-      - name: Create GitHub Release
+      - name: Attach to GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
@@ -79,3 +78,56 @@ jobs:
             src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
             pdforte-portable-windows.zip
           generate_release_notes: true
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Tauri app (macOS)
+        run: npm run tauri build
+
+      - name: Zip .app bundle (portable)
+        run: |
+          cd src-tauri/target/release/bundle/macos
+          zip -r ../../../../../pdforte-macos.zip pdforte.app
+
+      - name: Upload .app zip (portable)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdforte-macos-app
+          path: pdforte-macos.zip
+          if-no-files-found: warn
+
+      - name: Upload DMG installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdforte-macos-dmg
+          path: src-tauri/target/release/bundle/dmg/*.dmg
+          if-no-files-found: warn
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            pdforte-macos.zip
+            src-tauri/target/release/bundle/dmg/*.dmg
