@@ -1,15 +1,10 @@
 mod commands;
 
 use commands::convert::{check_libreoffice, convert_via_libreoffice, ocr_page, ocr_page_to_pdf, protect_pdf, unlock_pdf, read_file_bytes, save_bytes};
-use commands::pdf_ops::{
-    merge_pdfs, split_pdf, rotate_pages_pdf, reorder_pages_pdf, delete_pages_pdf,
-    extract_pages_pdf, insert_blank_page_pdf,
-    create_pdf_from_images, create_pdf_from_text_content,
-    get_pdf_metadata, set_pdf_metadata,
-    sanitize_pdf, get_signature_fields,
-    bake_annotations, add_watermark_pdf, add_header_footer_pdf,
-    compress_pdf,
-};
+use commands::pdf_ops::{merge_pdfs, split_pdf, rotate_pages_pdf, reorder_pages_pdf, delete_pages_pdf, extract_pages_pdf, insert_blank_page_pdf, create_pdf_from_images, create_pdf_from_text_content};
+use commands::pdf_metadata::{get_pdf_metadata, set_pdf_metadata, sanitize_pdf, get_signature_fields};
+use commands::pdf_annotations::{bake_annotations, add_watermark_pdf, add_header_footer_pdf};
+use commands::pdf_compress::compress_pdf;
 use commands::dialog::{open_file_dialog, open_files_dialog, open_folder_dialog, save_file_dialog, open_image_dialog};
 use commands::explorer::{convert_to_pdf, list_directory};
 use commands::file::{delete_sidecar, open_pdf, save_pdf, save_sidecar};
