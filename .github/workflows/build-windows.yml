@@ -39,6 +39,16 @@ jobs:
       - name: Build Tauri app (Windows)
         run: npm run tauri build -- --target x86_64-pc-windows-msvc
 
+      - name: Create portable zip
+        shell: pwsh
+        run: |
+          $releaseDir = "src-tauri/target/x86_64-pc-windows-msvc/release"
+          $items = @("$releaseDir/pdforte.exe")
+          if (Test-Path "$releaseDir/resources") {
+            $items += "$releaseDir/resources"
+          }
+          Compress-Archive -Path $items -DestinationPath "pdforte-portable-windows.zip"
+
       - name: Upload NSIS installer (.exe)
         uses: actions/upload-artifact@v4
         with:
@@ -53,6 +63,13 @@ jobs:
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
           if-no-files-found: warn
 
+      - name: Upload portable zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdforte-windows-portable
+          path: pdforte-portable-windows.zip
+          if-no-files-found: warn
+
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
@@ -60,4 +77,5 @@ jobs:
           files: |
             src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
             src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
+            pdforte-portable-windows.zip
           generate_release_notes: true
