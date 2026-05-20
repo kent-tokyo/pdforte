@@ -1,5 +1,5 @@
 import React, { memo, useRef, useCallback, useState, useEffect } from "react";
-import type { PageViewport } from "pdfjs-dist";
+import type { PDFPageProxy, PageViewport } from "pdfjs-dist";
 import type { Annotation } from "./annotationTypes";
 import { useAnnotationStore } from "../../store/annotationStore";
 import { useUiStore } from "../../store/uiStore";
@@ -18,6 +18,53 @@ import { getPendingImageData, clearPendingImageData } from "./pendingImage";
 interface Props {
   pageIndex: number;
   viewport: PageViewport;
+  pdfPage?: PDFPageProxy;
+}
+
+type TextItemCache = { x: number; y: number; fontSize: number; fontName: string };
+
+function sampleBgColor(
+  layerEl: HTMLElement, px: number, py: number
+): { bgColor: string; fontColor: string } {
+  const canvas = layerEl.parentElement?.querySelector("canvas");
+  if (!canvas || !(canvas instanceof HTMLCanvasElement))
+    return { bgColor: "rgba(255,255,255,0.9)", fontColor: "#000000" };
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return { bgColor: "rgba(255,255,255,0.9)", fontColor: "#000000" };
+  const dpr = window.devicePixelRatio || 1;
+  const size = 16;
+  const cx = Math.max(0, Math.round(px * dpr - size / 2));
+  const cy = Math.max(0, Math.round(py * dpr - size / 2));
+  try {
+    const data = ctx.getImageData(cx, cy, size, size).data;
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; n++; }
+    r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+    if (lum > 180) return { bgColor: "rgba(255,255,255,0.9)", fontColor: "#000000" };
+    return { bgColor: `rgba(${r},${g},${b},0.92)`, fontColor: lum < 128 ? "#ffffff" : "#000000" };
+  } catch {
+    return { bgColor: "rgba(255,255,255,0.9)", fontColor: "#000000" };
+  }
+}
+
+function mapFontFamily(fontName: string): string | undefined {
+  const n = fontName.toLowerCase();
+  if (n.includes("gothic") || n.includes("sans")) return "sans-serif";
+  if (n.includes("mincho") || n.includes("serif") || n.includes("roman")) return "serif";
+  if (n.includes("mono") || n.includes("courier")) return "monospace";
+  return undefined;
+}
+
+function findNearestText(
+  items: TextItemCache[], pdfX: number, pdfY: number, threshold = 40
+): TextItemCache | null {
+  let best: TextItemCache | null = null, bestDist = Infinity;
+  for (const item of items) {
+    const dist = Math.hypot(item.x - pdfX, item.y - pdfY);
+    if (dist < bestDist && dist < threshold) { best = item; bestDist = dist; }
+  }
+  return best;
 }
 
 const SHAPE_TOOLS = new Set(["shape-rect", "shape-ellipse", "shape-line", "shape-arrow"]);
@@ -57,7 +104,7 @@ const AnnotationItem = memo(function AnnotationItem({
   return null;
 });
 
-export function AnnotationLayer({ pageIndex, viewport }: Props) {
+export function AnnotationLayer({ pageIndex, viewport, pdfPage }: Props) {
   const activeTool = useAnnotationStore(s => s.activeTool);
   const selectedId = useAnnotationStore(s => s.selectedId);
   const addAnnotation = useAnnotationStore(s => s.addAnnotation);
@@ -78,6 +125,22 @@ export function AnnotationLayer({ pageIndex, viewport }: Props) {
   // Polygon state
   const [polygonPts, setPolygonPts] = useState<[number, number][] | null>(null);
   const [polygonCursor, setPolygonCursor] = useState<[number, number] | null>(null);
+  const textItemsRef = useRef<TextItemCache[]>([]);
+
+  useEffect(() => {
+    if (!pdfPage) return;
+    pdfPage.getTextContent().then((tc) => {
+      textItemsRef.current = tc.items
+        .filter((item): item is typeof item & { transform: number[]; fontName: string } =>
+          "transform" in item)
+        .map((item) => ({
+          x: item.transform[4] as number,
+          y: item.transform[5] as number,
+          fontSize: Math.round(Math.abs(item.transform[3] as number)),
+          fontName: item.fontName as string,
+        }));
+    });
+  }, [pdfPage]);
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -272,14 +335,21 @@ export function AnnotationLayer({ pageIndex, viewport }: Props) {
       }
 
       if (activeTool === "textbox") {
+        const layer = layerRef.current!;
+        const clickX = screenRect.left + screenRect.width / 2;
+        const clickY = screenRect.top + screenRect.height / 2;
+        const { bgColor, fontColor } = sampleBgColor(layer, clickX, clickY);
+        const [pdfX, pdfY] = viewport.convertToPdfPoint(clickX, clickY);
+        const near = findNearestText(textItemsRef.current, pdfX, pdfY);
         addAnnotation({
           type: "textbox",
           pageIndex,
           pdfRect,
           content: "",
-          fontSize: 12,
-          fontColor: "#000000",
-          bgColor: "",
+          fontSize: near && near.fontSize > 0 ? Math.max(6, near.fontSize) : 12,
+          fontFamily: near ? (mapFontFamily(near.fontName) ?? "sans-serif") : "sans-serif",
+          fontColor,
+          bgColor,
           bold: false,
           italic: false,
           lang: "ja",

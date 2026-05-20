@@ -133,7 +133,7 @@ export function PdfPage({ page, pageIndex, zoom, isVisible }: Props) {
         <TextLayer page={page} viewport={viewport} enabled={textLayerEnabled} />
       )}
       {viewport && (
-        <AnnotationLayer pageIndex={pageIndex} viewport={viewport} />
+        <AnnotationLayer pageIndex={pageIndex} viewport={viewport} pdfPage={page} />
       )}
     </div>
   );
