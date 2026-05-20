@@ -2,6 +2,7 @@ import React, { memo, useRef, useCallback, useState, useEffect } from "react";
 import type { PageViewport } from "pdfjs-dist";
 import type { Annotation } from "./annotationTypes";
 import { useAnnotationStore } from "../../store/annotationStore";
+import { useUiStore } from "../../store/uiStore";
 import { pdfRectToScreen, screenRectToPdf } from "./annotationUtils";
 import { TextBoxAnnotation } from "./TextBoxAnnotation";
 import { HighlightAnnotation } from "./HighlightAnnotation";
@@ -60,7 +61,10 @@ export function AnnotationLayer({ pageIndex, viewport }: Props) {
   const activeTool = useAnnotationStore(s => s.activeTool);
   const selectedId = useAnnotationStore(s => s.selectedId);
   const addAnnotation = useAnnotationStore(s => s.addAnnotation);
+  const deleteAnnotation = useAnnotationStore(s => s.deleteAnnotation);
   const setSelectedId = useAnnotationStore(s => s.setSelectedId);
+  const setContextMenu = useUiStore(s => s.setContextMenu);
+  const setCommentBalloon = useUiStore(s => s.setCommentBalloon);
   // Subscribe only to this page's annotations — other pages changing won't re-render this layer.
   const pageAnnotations = useAnnotationStore(s => s.annotations.get(pageIndex) ?? EMPTY_ANNOTATIONS);
 
@@ -345,6 +349,24 @@ export function AnnotationLayer({ pageIndex, viewport }: Props) {
     clearPendingImageData();
   }, [activeTool]);
 
+  const handleAnnotationContextMenu = useCallback(
+    (e: React.MouseEvent, ann: Annotation) => {
+      if (activeTool === POLYGON_TOOL) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setSelectedId(ann.id);
+      setContextMenu({
+        items: [
+          { label: "コメントを編集", action: () => setCommentBalloon({ annotationId: ann.id, x: e.clientX, y: e.clientY }) },
+          { label: "削除", action: () => deleteAnnotation(ann.id), danger: true },
+        ],
+        x: e.clientX,
+        y: e.clientY,
+      });
+    },
+    [activeTool, setSelectedId, deleteAnnotation, setContextMenu, setCommentBalloon]
+  );
+
   const handleLayerClick = useCallback(
     (e: React.MouseEvent) => {
       if ((e.target as HTMLElement).closest(".annotation-item")) return;
@@ -383,12 +405,13 @@ export function AnnotationLayer({ pageIndex, viewport }: Props) {
       }}
     >
       {pageAnnotations.map((ann) => (
-        <AnnotationItem
-          key={ann.id}
-          ann={ann}
-          viewport={viewport}
-          isSelected={ann.id === selectedId}
-        />
+        <div key={ann.id} style={{ display: "contents" }} onContextMenu={(e) => handleAnnotationContextMenu(e, ann)}>
+          <AnnotationItem
+            ann={ann}
+            viewport={viewport}
+            isSelected={ann.id === selectedId}
+          />
+        </div>
       ))}
 
       {/* Live drag preview for shape tools */}

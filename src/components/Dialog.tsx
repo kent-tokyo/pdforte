@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode, type CSSProperties } from "react";
+import { X } from "lucide-react";
 
 interface DialogProps {
   isOpen: boolean;
@@ -51,7 +52,7 @@ export function Dialog({ isOpen, onClose, title, children, width = 440, zIndex =
       >
         <div style={headerStyle}>
           <span id={titleId}>{title}</span>
-          <button onClick={onClose} aria-label="閉じる" style={closeBtnStyle}>✕</button>
+          <button onClick={onClose} aria-label="閉じる" style={closeBtnStyle}><X size={16} /></button>
         </div>
         {children}
       </div>

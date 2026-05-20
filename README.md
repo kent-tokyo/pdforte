@@ -2,13 +2,52 @@
 
 [日本語](README_ja.md) | [中文](README_zh.md)
 
-A lightweight, fast PDF editor built with Tauri v2, React, and PDF.js.
+A fast, lightweight PDF viewer and editor built with Tauri v2, React, and PDF.js.
+
+<p align="center">
+  <img src="docs/screenshots/demo-annotate.gif" alt="Annotation demo" width="80%">
+</p>
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/02-viewer.png" alt="PDF Viewer"><br>
+      <sub><b>PDF Viewer</b> — continuous scroll, thumbnail sidebar, zoom controls</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/08-annotations-on-page.png" alt="Annotations"><br>
+      <sub><b>Annotations</b> — text box, highlight, shape, and sticky note on a page</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/screenshots/07-textbox.png" alt="Text box"><br>
+      <sub><b>Text Box</b> — inline format toolbar with font, size, color, bold/italic</sub>
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/05-bookmarks.png" alt="Bookmarks"><br>
+      <sub><b>Bookmark Panel</b> — PDF outline tree with expand/collapse and page navigation</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/screenshots/12-translate-dialog.png" alt="AI Translation"><br>
+      <sub><b>AI Translation</b> — translate pages via DeepL, OpenAI, or Claude API</sub>
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/10-signature-dialog.png" alt="Signature"><br>
+      <sub><b>Signature</b> — draw and embed a signature with mouse or trackpad</sub>
+    </td>
+  </tr>
+</table>
 
 ## Why pdforte?
 
 | | pdforte | Adobe Acrobat | Smallpdf / PDF24 | Stirling PDF | Electron apps |
 |---|---|---|---|---|---|
-| **Price** | Free / Open source | $20+/month | Freemium / subscription | Free (self-hosted) | Varies |
+| **Price** | Free / Open source | Expensive subscription | Freemium / subscription | Free (self-hosted) | Varies |
 | **Privacy** | 100% offline | Cloud sync | Files uploaded to cloud | Self-hosted | Varies |
 | **Binary size** | ~5–15 MB | ~2 GB | Web app | Docker image | ~150 MB |
 | **Memory** | ~50 MB | ~500 MB | N/A | N/A | ~200 MB |
@@ -32,9 +71,10 @@ A lightweight, fast PDF editor built with Tauri v2, React, and PDF.js.
 - Continuous scroll with lazy page loading
 - Zoom (50% – 500%), fit-width, fit-page
 - Keyboard navigation (arrow keys, Page Up/Down)
-- Page thumbnail sidebar — accent-highlighted current page, auto-scroll
+- Page thumbnail sidebar — accent-highlighted current page, auto-scroll; **drag to reorder pages**
 - Bookmark / outline panel — expand/collapse tree, current-page indicator
 - Full-text search with previous/next navigation
+- **Inline find bar** — Ctrl+F / Cmd+F opens a floating search bar; Enter/Shift+Enter to navigate, Esc to close
 
 ### Annotations
 - **Text box** — drag to place, resize, edit inline (CJK font support)
@@ -47,14 +87,16 @@ A lightweight, fast PDF editor built with Tauri v2, React, and PDF.js.
 - **Stamp** — insert image as stamp with opacity control
 - **Sticky Note** — click icon to expand/collapse popup note
 - **Callout** — text box with draggable arrow pointing to target position
+- **Comments** — right-click any annotation → "Edit comment" to attach a text note; previewed in the annotation list
+- **Right-click context menu** — right-click selected text to copy; right-click annotation to delete or edit comment
 - **Undo / Redo** — Ctrl+Z / Ctrl+Y (unlimited history)
-- **Annotation list panel** — sidebar tab showing all annotations, click to navigate
+- **Annotation list panel** — sidebar tab showing all annotations with comment previews, click to navigate
 - **Property panel** — edit color, size, opacity for selected annotation
 - **Export / Import** — save and restore annotations as `.annot` JSON files
 
 ### Editing
 - Existing text editing (overlay mode)
-- Page reorder / delete (drag-and-drop)
+- Page reorder / delete (drag-and-drop in Page Order dialog or drag thumbnails directly)
 - Page rotation (90° CW/CCW per page)
 - Merge multiple PDFs
 - Split PDF by page ranges
@@ -168,14 +210,14 @@ Settings are stored at `~/.config/pdforte/settings.json`:
 }
 ```
 
-Open the settings UI via the ⚙ button in the toolbar.
+Open the settings UI via the Settings button in the toolbar.
 
 ## AI Translation
 
 1. Open a PDF
-2. Go to **Tools menu → PDFを翻訳** (or the 🌐 button)
+2. Go to **Tools menu → PDFを翻訳**
 3. Select target language and page range
-4. Enter your API key in Settings (⚙) if not already set
+4. Enter your API key in Settings if not already set
 5. Click **翻訳開始**
 
 Translation results are inserted as TextBox annotations overlaying the original text positions.
@@ -192,7 +234,7 @@ Supported engines: **DeepL**, **OpenAI GPT-4o-mini**, **Claude Haiku**.
 ## Annotation Export / Import
 
 Annotations can be exported to a `.annot` JSON file and imported back:
-- Open the **📝 注釈** sidebar tab
+- Open the **Annotations** sidebar tab
 - Use the **↑** (export) and **↓** (import) buttons at the top of the panel
 
 ## License

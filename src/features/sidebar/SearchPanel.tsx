@@ -1,69 +1,9 @@
-import { useState, useCallback, useRef } from "react";
 import { usePdfStore } from "../../store/pdfStore";
-
-interface SearchResult {
-  pageIndex: number;
-  pageNumber: number;
-  excerpt: string;
-  matchStart: number;
-}
+import { useSearch } from "./useSearch";
 
 export function SearchPanel() {
-  const { pdfDoc, setCurrentPage } = usePdfStore();
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [currentResultIdx, setCurrentResultIdx] = useState(-1);
-  const abortRef = useRef(false);
-
-  const search = useCallback(async () => {
-    if (!pdfDoc || !query.trim()) {
-      setResults([]);
-      setCurrentResultIdx(-1);
-      return;
-    }
-    abortRef.current = true;   // stop any in-progress search
-    await new Promise<void>((r) => setTimeout(r, 0)); // yield to let prior loop see the flag
-    abortRef.current = false;
-    setIsSearching(true);
-    setResults([]);
-    const q = query.toLowerCase();
-    const found: SearchResult[] = [];
-    try {
-      for (let i = 1; i <= pdfDoc.numPages; i++) {
-        if (abortRef.current) break;
-        const page = await pdfDoc.getPage(i);
-        const tc = await page.getTextContent();
-        const text = tc.items.map((item) => ("str" in item ? (item as { str: string }).str : "")).join("");
-        const lc = text.toLowerCase();
-        let idx = lc.indexOf(q);
-        while (idx !== -1 && found.length < 200) {
-          const start = Math.max(0, idx - 30);
-          const end = Math.min(text.length, idx + q.length + 50);
-          found.push({
-            pageIndex: i - 1,
-            pageNumber: i,
-            excerpt: (start > 0 ? "…" : "") + text.slice(start, end) + (end < text.length ? "…" : ""),
-            matchStart: idx - start + (start > 0 ? 1 : 0),
-          });
-          idx = lc.indexOf(q, idx + 1);
-        }
-        if (found.length >= 200) break;
-      }
-    } finally {
-      setIsSearching(false);
-    }
-    setResults(found);
-    setCurrentResultIdx(found.length > 0 ? 0 : -1);
-    if (found.length > 0) setCurrentPage(found[0].pageNumber);
-  }, [pdfDoc, query, setCurrentPage]);
-
-  const navigate = useCallback((dir: 1 | -1) => {
-    if (results.length === 0) return;
-    const next = (currentResultIdx + dir + results.length) % results.length;
-    setCurrentResultIdx(next);
-    setCurrentPage(results[next].pageNumber);
-  }, [results, currentResultIdx, setCurrentPage]);
+  const pdfDoc = usePdfStore(s => s.pdfDoc);
+  const { query, setQuery, results, isSearching, currentResultIdx, setCurrentResultIdx, search, navigate } = useSearch(pdfDoc);
 
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -79,12 +19,11 @@ export function SearchPanel() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
-      {/* Search input */}
       <div style={{ padding: 8, borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
         <div style={{ display: "flex", gap: 4, marginBottom: 4 }}>
           <input
             value={query}
-            onChange={(e) => { setQuery(e.target.value); if (!e.target.value) { setResults([]); setCurrentResultIdx(-1); } }}
+            onChange={(e) => { setQuery(e.target.value); if (!e.target.value) { search(""); } }}
             onKeyDown={handleKey}
             placeholder="検索... (Enter で検索)"
             autoFocus
@@ -100,7 +39,7 @@ export function SearchPanel() {
             }}
           />
           <button
-            onClick={search}
+            onClick={() => search()}
             disabled={isSearching || !query.trim()}
             style={{
               padding: "5px 10px",
@@ -117,7 +56,6 @@ export function SearchPanel() {
           </button>
         </div>
 
-        {/* Result navigation */}
         {results.length > 0 && (
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <span style={{ fontSize: 11, color: "var(--text-muted)", flex: 1 }}>
@@ -132,12 +70,11 @@ export function SearchPanel() {
         )}
       </div>
 
-      {/* Results list */}
       <div style={{ flex: 1, overflowY: "auto" }}>
         {results.map((r, i) => (
           <div
             key={i}
-            onClick={() => { setCurrentResultIdx(i); setCurrentPage(r.pageNumber); }}
+            onClick={() => { setCurrentResultIdx(i); }}
             style={{
               padding: "8px 12px",
               cursor: "pointer",

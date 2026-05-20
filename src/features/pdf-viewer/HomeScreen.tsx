@@ -1,5 +1,6 @@
-import { useCallback } from "react";
+import { useCallback, type ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { FolderOpen, PenTool, PenLine, FileEdit, Wrench, X, FileText } from "lucide-react";
 import { usePdfjs } from "./usePdfjs";
 import { useUiStore } from "../../store/uiStore";
 import { useAnnotationStore } from "../../store/annotationStore";
@@ -7,30 +8,30 @@ import { useRecentFilesStore, type RecentFile } from "../../store/recentFilesSto
 
 type ToolAction = "annotate" | "signature" | "edit" | "tools";
 
-const TOOL_CARDS: { icon: string; title: string; desc: string; color: string; action: ToolAction }[] = [
+const TOOL_CARDS: { icon: ReactNode; title: string; desc: string; color: string; action: ToolAction }[] = [
   {
-    icon: "🖊",
+    icon: <PenTool size={28} />,
     title: "注釈を追加",
     desc: "ハイライト、テキストボックス、下線などの注釈を追加",
     color: "#e8a020",
     action: "annotate",
   },
   {
-    icon: "✍",
+    icon: <PenLine size={28} />,
     title: "入力と署名",
     desc: "フォームに入力、署名を追加",
     color: "#9b59b6",
     action: "signature",
   },
   {
-    icon: "✏",
+    icon: <FileEdit size={28} />,
     title: "PDFを編集",
     desc: "テキスト、画像、ページなどを変更または追加",
     color: "#e74c3c",
     action: "edit",
   },
   {
-    icon: "⚙",
+    icon: <Wrench size={28} />,
     title: "PDFツール",
     desc: "結合・分割・圧縮・変換など",
     color: "#27ae60",
@@ -149,7 +150,7 @@ export function HomeScreen() {
             gap: 8,
           }}
         >
-          📂 ファイルを開く
+          <FolderOpen size={16} /> ファイルを開く
         </button>
       </div>
 
@@ -183,7 +184,7 @@ export function HomeScreen() {
               (e.currentTarget as HTMLDivElement).style.background = "var(--bg-secondary)";
             }}
           >
-            <div style={{ fontSize: 28 }}>{card.icon}</div>
+            <div style={{ color: card.color }}>{card.icon}</div>
             <div>
               <div style={{ fontWeight: 600, fontSize: 14, color: "var(--text-primary)", marginBottom: 4 }}>
                 {card.title}
@@ -208,7 +209,7 @@ export function HomeScreen() {
         color: "var(--text-muted)",
         fontSize: 13,
       }}>
-        📄 PDFファイルをここにドロップしても開けます
+        <FileText size={16} style={{ display: "inline", verticalAlign: "middle", marginRight: 6 }} />PDFファイルをここにドロップしても開けます
       </div>
 
       {/* Recent files */}
@@ -274,7 +275,7 @@ export function HomeScreen() {
                         opacity: 0.6,
                       }}
                     >
-                      ✕
+                      <X size={12} />
                     </button>
                   </td>
                 </tr>

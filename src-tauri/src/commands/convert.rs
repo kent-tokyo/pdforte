@@ -2,6 +2,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use serde::Serialize;
 
+const ALLOWED_LO_FORMATS: &[&str] = &["docx", "xlsx", "pptx", "pdf", "odt", "ods", "odp", "txt", "csv"];
+
 fn temp_path(prefix: &str, ext: &str) -> PathBuf {
     let nonce = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -87,6 +89,12 @@ pub async fn convert_via_libreoffice(
     format: String,
     output_dir: String,
 ) -> Result<String, String> {
+    // S3: validate format against allowlist to prevent LibreOffice filter-chain abuse
+    let base_format = format.split(':').next().unwrap_or(&format);
+    if !ALLOWED_LO_FORMATS.contains(&base_format) {
+        return Err(format!("Unsupported format: {}", format));
+    }
+
     let lo = super::libreoffice_bin().to_string();
     let fmt = format.clone();
     let inp = input_path.clone();
@@ -121,20 +129,26 @@ pub async fn ocr_page(image_bytes: Vec<u8>, lang: String) -> Result<String, Stri
     let tmp_out_base = temp_path("ocr_out", "txt").with_extension("");
     let tmp_txt = tmp_out_base.with_extension("txt");
 
-    std::fs::write(&tmp_img, &image_bytes).map_err(|e| e.to_string())?;
+    // S4: use 0o600 permissions so other users can't read page content
+    write_secure(&tmp_img, &image_bytes)?;
 
     let lang_arg = if lang.is_empty() { "jpn+eng".to_string() } else { lang };
     let img_str = tmp_img.to_str().unwrap_or("").to_string();
     let base_str = tmp_out_base.to_str().unwrap_or("").to_string();
     let lang_clone = lang_arg.clone();
 
-    let run_result = tokio::task::spawn_blocking(move || {
-        Command::new("tesseract")
-            .args([&img_str, &base_str, "-l", &lang_clone])
-            .status()
-            .map_err(|e| format!("Tesseract が見つかりません: {}", e))
-    })
+    // B2: 120-second timeout so a hung tesseract process doesn't stall forever
+    let run_result = tokio::time::timeout(
+        std::time::Duration::from_secs(120),
+        tokio::task::spawn_blocking(move || {
+            Command::new("tesseract")
+                .args([&img_str, &base_str, "-l", &lang_clone])
+                .status()
+                .map_err(|e| format!("Tesseract が見つかりません: {}", e))
+        }),
+    )
     .await
+    .map_err(|_| "Tesseract タイムアウト (120秒)".to_string())?
     .map_err(|e| format!("spawn_blocking error: {}", e))?;
 
     let _ = std::fs::remove_file(&tmp_img);
@@ -156,20 +170,26 @@ pub async fn ocr_page_to_pdf(image_bytes: Vec<u8>, lang: String) -> Result<Vec<u
     let tmp_out_base = temp_path("ocr_page", "pdf").with_extension("");
     let tmp_pdf = tmp_out_base.with_extension("pdf");
 
-    std::fs::write(&tmp_img, &image_bytes).map_err(|e| e.to_string())?;
+    // S4: use 0o600 permissions
+    write_secure(&tmp_img, &image_bytes)?;
 
     let lang_arg = if lang.is_empty() { "jpn+eng".to_string() } else { lang };
     let img_str = tmp_img.to_str().unwrap_or("").to_string();
     let base_str = tmp_out_base.to_str().unwrap_or("").to_string();
     let lang_clone = lang_arg.clone();
 
-    let run_result = tokio::task::spawn_blocking(move || {
-        Command::new("tesseract")
-            .args([&img_str, &base_str, "-l", &lang_clone, "pdf"])
-            .status()
-            .map_err(|e| format!("Tesseract が見つかりません: {}", e))
-    })
+    // B2: 120-second timeout
+    let run_result = tokio::time::timeout(
+        std::time::Duration::from_secs(120),
+        tokio::task::spawn_blocking(move || {
+            Command::new("tesseract")
+                .args([&img_str, &base_str, "-l", &lang_clone, "pdf"])
+                .status()
+                .map_err(|e| format!("Tesseract が見つかりません: {}", e))
+        }),
+    )
     .await
+    .map_err(|_| "Tesseract タイムアウト (120秒)".to_string())?
     .map_err(|e| format!("spawn_blocking error: {}", e))?;
 
     let _ = std::fs::remove_file(&tmp_img);

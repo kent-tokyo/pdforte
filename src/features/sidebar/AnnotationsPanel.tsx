@@ -150,6 +150,11 @@ export function AnnotationsPanel() {
               <div style={{ flex: 1, overflow: "hidden" }}>
                 <div style={{ fontSize: 11, color: "var(--text-muted)" }}>p.{ann.pageIndex + 1}</div>
                 <div style={{ fontSize: 12, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{preview(ann)}</div>
+                {ann.comment && (
+                  <div style={{ fontSize: 10, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>
+                    💬 {ann.comment.slice(0, 30)}{ann.comment.length > 30 ? "…" : ""}
+                  </div>
+                )}
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); deleteAnnotation(ann.id); }}

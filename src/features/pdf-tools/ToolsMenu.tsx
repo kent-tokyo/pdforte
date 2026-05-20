@@ -1,12 +1,18 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, type ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import {
+  FileDown, FileText, Files, Scissors, ArrowUpDown, Layers, RotateCw,
+  FileImage, Hash, ImageDown, FileOutput, ScanLine, FilePlus,
+  Layers2, Languages, ScanText, Lock, Unlock, ShieldCheck, BadgeCheck,
+  FileEdit, Printer, ChevronDown,
+} from "lucide-react";
 import type { TextItem } from "pdfjs-dist/types/src/display/api";
 import { useUiStore } from "../../store/uiStore";
 import { usePdfStore } from "../../store/pdfStore";
 
 interface MenuItem {
   label: string;
-  icon: string;
+  icon: ReactNode;
   action: () => void;
   disabled?: boolean;
 }
@@ -59,47 +65,48 @@ export function ToolsMenu() {
 
   const action = useCallback((fn: () => void) => () => { fn(); close(); }, [close]);
 
+  const s = 14;
   const sections: { heading: string; items: MenuItem[] }[] = [
     {
       heading: "整理",
       items: [
-        { icon: "🗜", label: "PDF 圧縮", action: action(() => setDialogOpen("compress")), disabled: !hasPdf },
-        { icon: "📋", label: "PDFをフラット化（注釈を焼き込み）", action: action(() => setDialogOpen("flatten")), disabled: !hasPdf },
-        { icon: "🔗", label: "PDF 結合", action: action(() => setDialogOpen("merge")) },
-        { icon: "✂", label: "PDF 分割", action: action(() => setDialogOpen("split")), disabled: !hasPdf },
-        { icon: "⇅", label: "ページ並び替え / 削除", action: action(() => setDialogOpen("pageOrder")), disabled: !hasPdf },
-        { icon: "📑", label: "ページを抽出", action: action(() => setDialogOpen("extractPages")), disabled: !hasPdf },
-        { icon: "🔄", label: "ページ回転", action: action(() => setDialogOpen("rotate")), disabled: !hasPdf },
-        { icon: "🖊", label: "ウォーターマークを追加", action: action(() => setDialogOpen("watermark")), disabled: !hasPdf },
-        { icon: "🔢", label: "ページ番号を追加", action: action(() => setDialogOpen("pageNumbers")), disabled: !hasPdf },
+        { icon: <FileDown size={s} />,    label: "PDF 圧縮",               action: action(() => setDialogOpen("compress")),    disabled: !hasPdf },
+        { icon: <Layers2 size={s} />,     label: "PDFをフラット化（注釈を焼き込み）", action: action(() => setDialogOpen("flatten")),    disabled: !hasPdf },
+        { icon: <Files size={s} />,       label: "PDF 結合",               action: action(() => setDialogOpen("merge")) },
+        { icon: <Scissors size={s} />,    label: "PDF 分割",               action: action(() => setDialogOpen("split")),       disabled: !hasPdf },
+        { icon: <ArrowUpDown size={s} />, label: "ページ並び替え / 削除",   action: action(() => setDialogOpen("pageOrder")),   disabled: !hasPdf },
+        { icon: <Layers size={s} />,      label: "ページを抽出",           action: action(() => setDialogOpen("extractPages")), disabled: !hasPdf },
+        { icon: <RotateCw size={s} />,    label: "ページ回転",             action: action(() => setDialogOpen("rotate")),      disabled: !hasPdf },
+        { icon: <FileImage size={s} />,   label: "ウォーターマークを追加", action: action(() => setDialogOpen("watermark")),   disabled: !hasPdf },
+        { icon: <Hash size={s} />,        label: "ページ番号を追加",       action: action(() => setDialogOpen("pageNumbers")), disabled: !hasPdf },
       ],
     },
     {
       heading: "変換・エクスポート",
       items: [
-        { icon: "🖼", label: "PDF → JPEG / PNG", action: action(() => setDialogOpen("exportImages")), disabled: !hasPdf },
-        { icon: "🔁", label: "変換 (Office・画像)", action: action(() => setDialogOpen("convert")) },
-        { icon: "📷", label: "PDFスキャナー（画像→PDF）", action: action(() => setDialogOpen("scanner")) },
-        { icon: "📄", label: "PDFを作成", action: action(() => setDialogOpen("createPdf")) },
-        { icon: "💾", label: "テキストとして保存", action: action(() => { handleSaveAsText(); }), disabled: !hasPdf },
+        { icon: <ImageDown size={s} />,   label: "PDF → JPEG / PNG",      action: action(() => setDialogOpen("exportImages")), disabled: !hasPdf },
+        { icon: <FileOutput size={s} />,  label: "変換 (Office・画像)",    action: action(() => setDialogOpen("convert")) },
+        { icon: <ScanLine size={s} />,    label: "PDFスキャナー（画像→PDF）", action: action(() => setDialogOpen("scanner")) },
+        { icon: <FilePlus size={s} />,    label: "PDFを作成",              action: action(() => setDialogOpen("createPdf")) },
+        { icon: <FileText size={s} />,    label: "テキストとして保存",     action: action(() => { handleSaveAsText(); }),       disabled: !hasPdf },
       ],
     },
     {
       heading: "AI ツール",
       items: [
-        { icon: "🌐", label: "PDFを翻訳", action: action(() => setDialogOpen("translate")), disabled: !hasPdf },
-        { icon: "🔍", label: "OCR (テキスト認識)", action: action(() => setDialogOpen("ocr")), disabled: !hasPdf },
+        { icon: <Languages size={s} />,   label: "PDFを翻訳",             action: action(() => setDialogOpen("translate")),    disabled: !hasPdf },
+        { icon: <ScanText size={s} />,    label: "OCR (テキスト認識)",    action: action(() => setDialogOpen("ocr")),          disabled: !hasPdf },
       ],
     },
     {
       heading: "セキュリティ・情報",
       items: [
-        { icon: "🔒", label: "PDFを保護", action: action(() => setDialogOpen("protect")), disabled: !hasPdf },
-        { icon: "🔓", label: "パスワードを解除", action: action(() => setDialogOpen("unlock")), disabled: !hasPdf },
-        { icon: "🧹", label: "PDFサニタイズ", action: action(() => setDialogOpen("sanitize")), disabled: !hasPdf },
-        { icon: "🔐", label: "署名の検証", action: action(() => setDialogOpen("signatureVerify")), disabled: !hasPdf },
-        { icon: "📋", label: "メタデータ編集", action: action(() => setDialogOpen("metadata")), disabled: !hasPdf },
-        { icon: "🖨", label: "印刷...", action: action(() => setDialogOpen("print")), disabled: !hasPdf },
+        { icon: <Lock size={s} />,        label: "PDFを保護",             action: action(() => setDialogOpen("protect")),      disabled: !hasPdf },
+        { icon: <Unlock size={s} />,      label: "パスワードを解除",      action: action(() => setDialogOpen("unlock")),       disabled: !hasPdf },
+        { icon: <ShieldCheck size={s} />, label: "PDFサニタイズ",         action: action(() => setDialogOpen("sanitize")),     disabled: !hasPdf },
+        { icon: <BadgeCheck size={s} />,  label: "署名の検証",            action: action(() => setDialogOpen("signatureVerify")), disabled: !hasPdf },
+        { icon: <FileEdit size={s} />,    label: "メタデータ編集",        action: action(() => setDialogOpen("metadata")),     disabled: !hasPdf },
+        { icon: <Printer size={s} />,     label: "印刷...",               action: action(() => setDialogOpen("print")),        disabled: !hasPdf },
       ],
     },
   ];
@@ -114,7 +121,7 @@ export function ToolsMenu() {
           background: open ? "var(--accent)" : "transparent", border: "none", cursor: "pointer", flexShrink: 0,
         }}
       >
-        ツール ▾
+        ツール <ChevronDown size={12} />
       </button>
 
       {open && (
@@ -143,7 +150,7 @@ export function ToolsMenu() {
                   onMouseEnter={(e) => { if (!item.disabled) (e.currentTarget as HTMLElement).style.background = "var(--bg-primary)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                 >
-                  <span style={{ fontSize: 14, width: 20, textAlign: "center" }}>{item.icon}</span>
+                  <span style={{ width: 20, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{item.icon}</span>
                   {item.label}
                 </button>
               ))}

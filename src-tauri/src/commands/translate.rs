@@ -1,8 +1,18 @@
 use serde_json::json;
 
+// B6: shared client with 30s timeout — avoids per-call allocation and connection pool misses
+fn http_client() -> &'static reqwest::Client {
+    static CLIENT: std::sync::OnceLock<reqwest::Client> = std::sync::OnceLock::new();
+    CLIENT.get_or_init(|| {
+        reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(30))
+            .build()
+            .expect("failed to build HTTP client")
+    })
+}
+
 async fn call_deepl(text: &str, target: &str, api_key: &str) -> Result<String, String> {
-    let client = reqwest::Client::new();
-    let resp = client
+    let resp = http_client()
         .post("https://api-free.deepl.com/v2/translate")
         .header("Authorization", format!("DeepL-Auth-Key {api_key}"))
         .json(&json!({
@@ -13,6 +23,12 @@ async fn call_deepl(text: &str, target: &str, api_key: &str) -> Result<String, S
         .await
         .map_err(|e| e.to_string())?;
 
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        return Err(format!("DeepL API エラー {}: {}", status, body));
+    }
+
     let body: serde_json::Value = resp.json().await.map_err(|e| e.to_string())?;
     body["translations"][0]["text"]
         .as_str()
@@ -21,8 +37,7 @@ async fn call_deepl(text: &str, target: &str, api_key: &str) -> Result<String, S
 }
 
 async fn call_openai(text: &str, target: &str, api_key: &str) -> Result<String, String> {
-    let client = reqwest::Client::new();
-    let resp = client
+    let resp = http_client()
         .post("https://api.openai.com/v1/chat/completions")
         .header("Authorization", format!("Bearer {api_key}"))
         .json(&json!({
@@ -39,6 +54,12 @@ async fn call_openai(text: &str, target: &str, api_key: &str) -> Result<String, 
         .await
         .map_err(|e| e.to_string())?;
 
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        return Err(format!("OpenAI API エラー {}: {}", status, body));
+    }
+
     let body: serde_json::Value = resp.json().await.map_err(|e| e.to_string())?;
     body["choices"][0]["message"]["content"]
         .as_str()
@@ -47,8 +68,7 @@ async fn call_openai(text: &str, target: &str, api_key: &str) -> Result<String, 
 }
 
 async fn call_claude(text: &str, target: &str, api_key: &str) -> Result<String, String> {
-    let client = reqwest::Client::new();
-    let resp = client
+    let resp = http_client()
         .post("https://api.anthropic.com/v1/messages")
         .header("x-api-key", api_key)
         .header("anthropic-version", "2023-06-01")
@@ -65,6 +85,12 @@ async fn call_claude(text: &str, target: &str, api_key: &str) -> Result<String, 
         .send()
         .await
         .map_err(|e| e.to_string())?;
+
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        return Err(format!("Claude API エラー {}: {}", status, body));
+    }
 
     let body: serde_json::Value = resp.json().await.map_err(|e| e.to_string())?;
     body["content"][0]["text"]

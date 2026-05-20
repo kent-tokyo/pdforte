@@ -1,23 +1,26 @@
-import { useEffect, useRef, useState, memo } from "react";
+import { useEffect, useRef, useState, memo, useCallback } from "react";
 import { usePdfStore } from "../../store/pdfStore";
+import { useAnnotationStore } from "../../store/annotationStore";
+import { usePdfjs } from "../pdf-viewer/usePdfjs";
+import { reorderPages } from "../pdf-tools/pdfOperations";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 
 interface ItemProps {
   pdfDoc: PDFDocumentProxy;
   pageIndex: number;
   isActive: boolean;
+  isDragging: boolean;
+  isDragOver: boolean;
   onClick: () => void;
 }
 
-// Renders lazily: only fetches + draws the page canvas when scrolled into view.
-const ThumbnailItem = memo(function ThumbnailItem({ pdfDoc, pageIndex, isActive, onClick }: ItemProps) {
+const ThumbnailItem = memo(function ThumbnailItem({ pdfDoc, pageIndex, isActive, isDragging, isDragOver, onClick }: ItemProps) {
   const [src, setSrc] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // src is already loaded for this doc — nothing to do.
     if (src) return;
 
     let cancelled = false;
@@ -56,12 +59,14 @@ const ThumbnailItem = memo(function ThumbnailItem({ pdfDoc, pageIndex, isActive,
       onClick={onClick}
       style={{
         marginBottom: 8,
-        cursor: "pointer",
-        border: isActive ? "2px solid var(--accent)" : "2px solid transparent",
+        cursor: "grab",
+        border: isActive ? "2px solid var(--accent)" : isDragOver ? "2px solid var(--accent)" : "2px solid transparent",
         borderRadius: 4,
         overflow: "hidden",
         background: isActive ? "var(--accent)1a" : "transparent",
         boxShadow: isActive ? "0 2px 8px rgba(0,0,0,0.3)" : "none",
+        opacity: isDragging ? 0.4 : 1,
+        borderTop: isDragOver ? "3px solid var(--accent)" : undefined,
       }}
     >
       {src ? (
@@ -93,18 +98,21 @@ const ThumbnailItem = memo(function ThumbnailItem({ pdfDoc, pageIndex, isActive,
 
 export function ThumbnailPanel() {
   const pdfDoc = usePdfStore(s => s.pdfDoc);
+  const originalBytes = usePdfStore(s => s.originalBytes);
+  const filePath = usePdfStore(s => s.filePath);
   const currentPage = usePdfStore(s => s.currentPage);
   const setCurrentPage = usePdfStore(s => s.setCurrentPage);
+  const clearAnnotations = useAnnotationStore(s => s.clearAnnotations);
+  const { loadFromBytes } = usePdfjs();
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [dragSrc, setDragSrc] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
 
-  // Reset ref array length when doc changes.
   const numPages = pdfDoc?.numPages ?? 0;
   if (itemRefs.current.length !== numPages) {
     itemRefs.current = new Array(numPages).fill(null);
   }
 
-  // Track doc identity so ThumbnailItem keys change when a new file is opened,
-  // forcing React to unmount old items and reset their src state.
   const docIdRef = useRef(0);
   const prevDocRef = useRef(pdfDoc);
   if (prevDocRef.current !== pdfDoc) {
@@ -117,6 +125,17 @@ export function ThumbnailPanel() {
     itemRefs.current[currentPage - 1]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [currentPage]);
 
+  const handleDrop = useCallback(async (targetIndex: number) => {
+    if (dragSrc === null || dragSrc === targetIndex || !originalBytes || !filePath) return;
+    const order = Array.from({ length: numPages }, (_, i) => i);
+    order.splice(targetIndex, 0, order.splice(dragSrc, 1)[0]);
+    setDragSrc(null);
+    setDragOver(null);
+    const newBytes = await reorderPages(originalBytes, order);
+    clearAnnotations();
+    await loadFromBytes(newBytes, filePath);
+  }, [dragSrc, numPages, originalBytes, filePath, clearAnnotations, loadFromBytes]);
+
   if (!pdfDoc) {
     return <div style={{ padding: 16, color: "var(--text-muted)", fontSize: 12 }}>PDFを開いてください</div>;
   }
@@ -124,11 +143,21 @@ export function ThumbnailPanel() {
   return (
     <div style={{ overflowY: "auto", height: "100%", padding: 8 }}>
       {Array.from({ length: pdfDoc.numPages }, (_, i) => (
-        <div key={`${docId}-${i}`} ref={(el) => { itemRefs.current[i] = el; }}>
+        <div
+          key={`${docId}-${i}`}
+          ref={(el) => { itemRefs.current[i] = el; }}
+          draggable
+          onDragStart={() => setDragSrc(i)}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(i); }}
+          onDragEnd={() => { setDragSrc(null); setDragOver(null); }}
+          onDrop={() => handleDrop(i)}
+        >
           <ThumbnailItem
             pdfDoc={pdfDoc}
             pageIndex={i}
             isActive={currentPage === i + 1}
+            isDragging={dragSrc === i}
+            isDragOver={dragOver === i && dragSrc !== i}
             onClick={() => setCurrentPage(i + 1)}
           />
         </div>

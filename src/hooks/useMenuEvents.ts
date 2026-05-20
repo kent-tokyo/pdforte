@@ -121,7 +121,11 @@ export function useMenuEvents() {
             : ext === "gif" ? "image/gif"
             : ext === "webp" ? "image/webp"
             : "image/png";
-          const binary = uint8.reduce((acc, b) => acc + String.fromCharCode(b), "");
+          let binary = "";
+          const chunkSize = 8192;
+          for (let i = 0; i < uint8.length; i += chunkSize) {
+            binary += String.fromCharCode(...Array.from(uint8.subarray(i, i + chunkSize)));
+          }
           const dataUrl = `data:${mime};base64,${btoa(binary)}`;
           setPendingImageData(dataUrl);
           ref.current.annotationStore.setActiveTool("image-add" as import("../features/annotations/annotationTypes").AnnotationTool);

@@ -7,11 +7,12 @@ export function useFileDrop() {
   const { loadFromBytes } = usePdfjs();
 
   useEffect(() => {
+    let cancelled = false;
     let unlisten: (() => void) | undefined;
 
     const setup = async () => {
       const webview = getCurrentWebviewWindow();
-      unlisten = await webview.onDragDropEvent(async (event) => {
+      const fn = await webview.onDragDropEvent(async (event) => {
         if (event.payload.type !== "drop") return;
         const paths = (event.payload as { type: string; paths: string[] }).paths;
         const pdfPaths = paths.filter((p) => p.toLowerCase().endsWith(".pdf"));
@@ -26,9 +27,14 @@ export function useFileDrop() {
           console.error("Drop open failed:", err);
         }
       });
+      if (cancelled) fn();
+      else unlisten = fn;
     };
 
     setup();
-    return () => { unlisten?.(); };
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
   }, [loadFromBytes]);
 }

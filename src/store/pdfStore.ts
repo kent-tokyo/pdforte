@@ -17,6 +17,7 @@ interface PdfState {
   setFitMode: (mode: "custom" | "width" | "page") => void;
   setIsLoading: (loading: boolean) => void;
   setIsDirty: (dirty: boolean) => void;
+  setOriginalBytes: (bytes: Uint8Array) => void;
   close: () => void;
 }
 
@@ -39,6 +40,7 @@ export const usePdfStore = create<PdfState>((set, get) => ({
   setFitMode: (mode) => set({ fitMode: mode }),
   setIsLoading: (isLoading) => set({ isLoading }),
   setIsDirty: (isDirty) => set({ isDirty }),
+  setOriginalBytes: (originalBytes) => set({ originalBytes }),
   close: () => {
     get().pdfDoc?.destroy();
     set({ pdfDoc: null, filePath: null, originalBytes: null, numPages: 0, currentPage: 1, isDirty: false });

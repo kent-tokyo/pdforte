@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Environment / secrets
+.env
+.env.*
+*.pem
+*.key
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -23,6 +29,7 @@ dist-ssr
 *.sln
 *.sw?
 
+# Local notes and AI config
 memo.txt
 tasks/
 CLAUDE.md

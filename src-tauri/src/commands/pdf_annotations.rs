@@ -508,6 +508,11 @@ pub async fn add_watermark_pdf(
     rotation: f32,
     pages: Option<Vec<u32>>,
 ) -> Result<Vec<u8>, String> {
+    // B9: Helvetica/WinAnsiEncoding only supports Latin-1 (0x20–0xFF).
+    // Non-ASCII characters (CJK, emoji) produce garbled output or PDF spec violations.
+    if !text.is_ascii() {
+        return Err("ウォーターマークのテキストはASCII文字のみ使用できます（Helveticaフォントの制限）".to_string());
+    }
     use std::io::Cursor;
     use lopdf::{Dictionary, Object};
 

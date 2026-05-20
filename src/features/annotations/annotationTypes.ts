@@ -4,6 +4,7 @@ export interface AnnotationBase {
   pdfRect: { x: number; y: number; width: number; height: number };
   createdAt: number;
   updatedAt: number;
+  comment?: string;
 }
 
 export interface TextBoxAnnotation extends AnnotationBase {

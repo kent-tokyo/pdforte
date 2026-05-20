@@ -1,6 +1,14 @@
 use serde::Serialize;
 use std::path::Path;
 
+/// S2: reject paths containing '..' to prevent arbitrary directory enumeration
+fn validate_path(path: &str) -> Result<(), String> {
+    if Path::new(path).components().any(|c| matches!(c, std::path::Component::ParentDir)) {
+        return Err("Invalid path: '..' is not allowed".to_string());
+    }
+    Ok(())
+}
+
 #[derive(Serialize)]
 pub struct FileEntry {
     pub name: String,
@@ -11,6 +19,7 @@ pub struct FileEntry {
 
 #[tauri::command]
 pub async fn list_directory(path: String) -> Result<Vec<FileEntry>, String> {
+    validate_path(&path)?;
     let dir = Path::new(&path);
     let entries = std::fs::read_dir(dir).map_err(|e| e.to_string())?;
 
@@ -51,6 +60,8 @@ pub async fn list_directory(path: String) -> Result<Vec<FileEntry>, String> {
 
 #[tauri::command]
 pub async fn convert_to_pdf(input_path: String, output_path: String) -> Result<(), String> {
+    validate_path(&input_path)?;
+    validate_path(&output_path)?;
     let libreoffice = super::libreoffice_bin();
 
     let output_dir = Path::new(&output_path)

@@ -1,3 +1,5 @@
+import { type ReactNode } from "react";
+import { FolderOpen, LayoutGrid, BookOpen, Search, MessageSquare } from "lucide-react";
 import { useUiStore, type SidebarTab } from "../../store/uiStore";
 import { ThumbnailPanel } from "./ThumbnailPanel";
 import { BookmarkPanel } from "./BookmarkPanel";
@@ -5,12 +7,12 @@ import { ExplorerPanel } from "./ExplorerPanel";
 import { SearchPanel } from "./SearchPanel";
 import { AnnotationsPanel } from "./AnnotationsPanel";
 
-const TABS: { id: SidebarTab; icon: string; label: string }[] = [
-  { id: "explorer", icon: "🗂", label: "エクスプローラー" },
-  { id: "thumbnails", icon: "⊞", label: "ページ" },
-  { id: "bookmarks", icon: "≡", label: "目次" },
-  { id: "search", icon: "🔍", label: "検索" },
-  { id: "annotations", icon: "📝", label: "注釈" },
+const TABS: { id: SidebarTab; icon: ReactNode; label: string }[] = [
+  { id: "explorer",    icon: <FolderOpen size={16} />,  label: "エクスプローラー" },
+  { id: "thumbnails",  icon: <LayoutGrid size={16} />,  label: "ページ" },
+  { id: "bookmarks",   icon: <BookOpen size={16} />,    label: "目次" },
+  { id: "search",      icon: <Search size={16} />,      label: "検索" },
+  { id: "annotations", icon: <MessageSquare size={16} />, label: "注釈" },
 ];
 
 export function Sidebar() {
@@ -59,7 +61,7 @@ export function Sidebar() {
               padding: 0,
             }}
           >
-            <span style={{ fontSize: 14 }}>{tab.icon}</span>
+            <span style={{ display: "flex" }}>{tab.icon}</span>
             <span style={{ fontSize: 11, letterSpacing: "0.02em" }}>{tab.label.length > 4 ? tab.label.slice(0, 4) : tab.label}</span>
           </button>
         ))}

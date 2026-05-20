@@ -3,10 +3,11 @@ import { PdfPage } from "./PdfPage";
 import { usePdfStore } from "../../store/pdfStore";
 import { useUiStore } from "../../store/uiStore";
 import { HomeScreen } from "./HomeScreen";
+import { FindBar } from "./FindBar";
 
 export function PdfViewer() {
   const { pdfDoc, zoom, setZoom, fitMode, setCurrentPage } = usePdfStore();
-  const { readingMode, setReadingMode } = useUiStore();
+  const { readingMode, setReadingMode, setContextMenu } = useUiStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const [pages, setPages] = useState<import("pdfjs-dist").PDFPageProxy[]>([]);
   const [visiblePages, setVisiblePages] = useState<Set<number>>(new Set([0, 1]));
@@ -54,7 +55,7 @@ export function PdfViewer() {
     });
     observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, [fitMode, basePageSize, containerRef.current]);
+  }, [fitMode, basePageSize]);
 
   const updateVisible = useCallback(() => {
     const container = containerRef.current;
@@ -106,47 +107,62 @@ export function PdfViewer() {
     return () => window.removeEventListener("keydown", onKey);
   }, [pdfDoc, currentPage, numPages, setCurrentPage]);
 
+  const handleViewerContextMenu = useCallback((e: React.MouseEvent) => {
+    const selection = window.getSelection()?.toString().trim();
+    if (!selection) return;
+    e.preventDefault();
+    setContextMenu({
+      items: [{ label: "コピー", action: () => navigator.clipboard.writeText(selection) }],
+      x: e.clientX,
+      y: e.clientY,
+    });
+  }, [setContextMenu]);
+
   if (!pdfDoc) {
     return <HomeScreen />;
   }
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        flex: 1,
-        overflowY: "auto",
-        overflowX: "auto",
-        background: "var(--bg-viewer)",
-        padding: "20px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      {readingMode && (
-        <button
-          onClick={() => setReadingMode(false)}
-          style={{
-            position: "fixed", top: 12, right: 16, zIndex: 100,
-            background: "rgba(0,0,0,0.5)", color: "#fff",
-            border: "none", borderRadius: 4, padding: "4px 10px",
-            fontSize: 12, cursor: "pointer",
-          }}
-        >
-          ✕ 閲覧モード終了
-        </button>
-      )}
-      {pages.map((page, i) => (
-        <div key={i} className="pdf-page-wrapper">
-          <PdfPage
-            page={page}
-            pageIndex={i}
-            zoom={zoom}
-            isVisible={visiblePages.has(i)}
-          />
-        </div>
-      ))}
+    <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+      <FindBar />
+      <div
+        ref={containerRef}
+        onContextMenu={handleViewerContextMenu}
+        style={{
+          height: "100%",
+          overflowY: "auto",
+          overflowX: "auto",
+          background: "var(--bg-viewer)",
+          padding: "20px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        {readingMode && (
+          <button
+            onClick={() => setReadingMode(false)}
+            style={{
+              position: "fixed", top: 12, right: 16, zIndex: 100,
+              background: "rgba(0,0,0,0.5)", color: "#fff",
+              border: "none", borderRadius: 4, padding: "4px 10px",
+              fontSize: 12, cursor: "pointer",
+            }}
+          >
+            ✕ 閲覧モード終了
+          </button>
+        )}
+        {pages.map((page, i) => (
+          <div key={i} className="pdf-page-wrapper">
+            <PdfPage
+              page={page}
+              pageIndex={i}
+              zoom={zoom}
+              isVisible={visiblePages.has(i)}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

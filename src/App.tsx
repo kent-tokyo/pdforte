@@ -29,6 +29,8 @@ import { FlattenDialog } from "./features/pdf-tools/FlattenDialog";
 import { UnlockPdfDialog } from "./features/pdf-tools/UnlockPdfDialog";
 import { PasswordDialog } from "./features/pdf-viewer/PasswordDialog";
 import { AboutDialog } from "./features/pdf-tools/AboutDialog";
+import { ContextMenu } from "./components/ContextMenu";
+import { CommentBalloon } from "./components/CommentBalloon";
 import { usePdfStore } from "./store/pdfStore";
 import { useAnnotationStore } from "./store/annotationStore";
 import { useUiStore } from "./store/uiStore";
@@ -42,13 +44,14 @@ function StatusBar() {
   return (
     <div style={{
       height: "var(--statusbar-height)",
-      background: "var(--accent)",
+      background: "var(--bg-toolbar)",
+      borderTop: "1px solid var(--border)",
       display: "flex",
       alignItems: "center",
       padding: "0 12px",
       gap: 16,
       fontSize: 11,
-      color: "#fff",
+      color: "var(--text-secondary)",
       flexShrink: 0,
     }}>
       {numPages > 0 && (
@@ -66,7 +69,7 @@ function StatusBar() {
 export default function App() {
   const { undo, redo } = useAnnotationStore();
   const { filePath } = usePdfStore();
-  const { readingMode, setReadingMode } = useUiStore();
+  const { readingMode, setReadingMode, setFindBarOpen } = useUiStore();
   const { load: loadRecentFiles, add: addRecentFile } = useRecentFilesStore();
   useMenuEvents();
   useFileDrop();
@@ -80,14 +83,15 @@ export default function App() {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable) return;
       const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key === "f") { e.preventDefault(); setFindBarOpen(true); return; }
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable) return;
       if (mod && e.key === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
       if (mod && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); redo(); }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [undo, redo]);
+  }, [undo, redo, setFindBarOpen]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setReadingMode(false); };
@@ -129,6 +133,8 @@ export default function App() {
       <UnlockPdfDialog />
       <PasswordDialog />
       <AboutDialog />
+      <ContextMenu />
+      <CommentBalloon />
     </div>
   );
 }

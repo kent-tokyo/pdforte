@@ -1,5 +1,11 @@
-import { useCallback } from "react";
+import { useCallback, type ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import {
+  FolderOpen, Save, Undo2, Redo2,
+  Hand, MousePointer2, Type, Highlighter, Underline, Strikethrough,
+  PenLine, Stamp, StickyNote, MessageSquarePlus,
+  Square, Circle, Minus, ArrowRight, Spline, Pencil, ImagePlus, Settings,
+} from "lucide-react";
 import { usePdfStore } from "../../store/pdfStore";
 import { useAnnotationStore } from "../../store/annotationStore";
 import { useUiStore } from "../../store/uiStore";
@@ -9,26 +15,26 @@ import { ToolsMenu } from "../pdf-tools/ToolsMenu";
 import type { AnnotationTool } from "../annotations/annotationTypes";
 import { setPendingImageData } from "../annotations/pendingImage";
 
-const TOOLS: { id: AnnotationTool; label: string; icon: string }[] = [
-  { id: "hand", label: "手のひら", icon: "✋" },
-  { id: "select", label: "選択 / テキスト編集 (ダブルクリック)", icon: "↖" },
-  { id: "textbox", label: "テキスト追加", icon: "T" },
-  { id: "highlight", label: "蛍光ペン", icon: "🖊" },
-  { id: "underline", label: "下線", icon: "U̲" },
-  { id: "strikethrough", label: "取り消し線", icon: "S̶" },
-  { id: "signature", label: "署名", icon: "✍" },
-  { id: "stamp", label: "スタンプ", icon: "🔖" },
-  { id: "stickynote", label: "付箋", icon: "📌" },
-  { id: "callout", label: "吹き出し", icon: "💬" },
+const TOOLS: { id: AnnotationTool; label: string; icon: ReactNode }[] = [
+  { id: "hand",          label: "手のひら",                       icon: <Hand size={16} /> },
+  { id: "select",        label: "選択 / テキスト編集 (ダブルクリック)", icon: <MousePointer2 size={16} /> },
+  { id: "textbox",       label: "テキスト追加",                   icon: <Type size={16} /> },
+  { id: "highlight",     label: "蛍光ペン",                       icon: <Highlighter size={16} /> },
+  { id: "underline",     label: "下線",                           icon: <Underline size={16} /> },
+  { id: "strikethrough", label: "取り消し線",                     icon: <Strikethrough size={16} /> },
+  { id: "signature",     label: "署名",                           icon: <PenLine size={16} /> },
+  { id: "stamp",         label: "スタンプ",                       icon: <Stamp size={16} /> },
+  { id: "stickynote",    label: "付箋",                           icon: <StickyNote size={16} /> },
+  { id: "callout",       label: "吹き出し",                       icon: <MessageSquarePlus size={16} /> },
 ];
 
-const SHAPE_TOOLS: { id: AnnotationTool; label: string; icon: string }[] = [
-  { id: "shape-rect",    label: "矩形",  icon: "□" },
-  { id: "shape-ellipse", label: "楕円",  icon: "○" },
-  { id: "shape-line",    label: "直線",  icon: "╱" },
-  { id: "shape-arrow",   label: "矢印",  icon: "→" },
-  { id: "shape-polygon", label: "多角形 (右クリックで確定)", icon: "⬠" },
-  { id: "pencil",        label: "フリーハンド", icon: "✏" },
+const SHAPE_TOOLS: { id: AnnotationTool; label: string; icon: ReactNode }[] = [
+  { id: "shape-rect",    label: "矩形",                     icon: <Square size={16} /> },
+  { id: "shape-ellipse", label: "楕円",                     icon: <Circle size={16} /> },
+  { id: "shape-line",    label: "直線",                     icon: <Minus size={16} /> },
+  { id: "shape-arrow",   label: "矢印",                     icon: <ArrowRight size={16} /> },
+  { id: "shape-polygon", label: "多角形 (右クリックで確定)", icon: <Spline size={16} /> },
+  { id: "pencil",        label: "フリーハンド",             icon: <Pencil size={16} /> },
 ];
 
 const ZOOM_PRESETS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
@@ -125,8 +131,8 @@ export function Toolbar() {
       overflowX: "auto",
     }}>
       {/* File ops */}
-      <button onClick={openFile} title="開く (Ctrl+O)" style={btnStyle}>📂</button>
-      <button onClick={() => save()} disabled={!pdfDoc} title="保存 (Ctrl+S)" style={btnStyle}>💾</button>
+      <button onClick={openFile} title="開く (Ctrl+O)" style={btnStyle}><FolderOpen size={16} /></button>
+      <button onClick={() => save()} disabled={!pdfDoc} title="保存 (Ctrl+S)" style={btnStyle}><Save size={16} /></button>
       <div style={separatorStyle} />
 
       {/* Tools dropdown */}
@@ -134,8 +140,8 @@ export function Toolbar() {
       <div style={separatorStyle} />
 
       {/* Undo/Redo */}
-      <button onClick={undo} disabled={undoCount === 0} title="元に戻す (Ctrl+Z)" style={btnStyle}>↩</button>
-      <button onClick={redo} disabled={redoCount === 0} title="やり直し (Ctrl+Y)" style={btnStyle}>↪</button>
+      <button onClick={undo} disabled={undoCount === 0} title="元に戻す (Ctrl+Z)" style={btnStyle}><Undo2 size={16} /></button>
+      <button onClick={redo} disabled={redoCount === 0} title="やり直し (Ctrl+Y)" style={btnStyle}><Redo2 size={16} /></button>
       <div style={separatorStyle} />
 
       {/* Annotation tools */}
@@ -165,8 +171,6 @@ export function Toolbar() {
           aria-pressed={activeTool === tool.id}
           style={{
             ...btnStyle,
-            fontWeight: 600,
-            fontSize: 15,
             background: activeTool === tool.id ? "var(--accent)" : "transparent",
             color: activeTool === tool.id ? "#fff" : "var(--text-primary)",
           }}
@@ -180,7 +184,7 @@ export function Toolbar() {
         disabled={!pdfDoc}
         style={{ ...btnStyle, background: activeTool === ("image-add" as AnnotationTool) ? "var(--accent)" : "transparent", color: activeTool === ("image-add" as AnnotationTool) ? "#fff" : "var(--text-primary)", opacity: pdfDoc ? 1 : 0.4 }}
       >
-        🖼
+        <ImagePlus size={16} />
       </button>
       <div style={separatorStyle} />
 
@@ -214,7 +218,7 @@ export function Toolbar() {
 
       {/* Settings (right) */}
       <div style={{ marginLeft: "auto" }}>
-        <button onClick={() => setDialogOpen("settings")} title="設定" style={btnStyle}>⚙</button>
+        <button onClick={() => setDialogOpen("settings")} title="設定" style={btnStyle}><Settings size={16} /></button>
       </div>
     </div>
   );
@@ -227,7 +231,6 @@ const btnStyle: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   borderRadius: 4,
-  fontSize: 15,
   color: "var(--text-primary)",
   background: "transparent",
   border: "none",

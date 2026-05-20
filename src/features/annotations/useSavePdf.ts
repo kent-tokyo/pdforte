@@ -5,8 +5,8 @@ import { useAnnotationStore } from "../../store/annotationStore";
 import { embedAnnotationsAndSave } from "./savePipeline";
 
 export function useSavePdf() {
-  const { filePath, originalBytes, setIsDirty } = usePdfStore();
-  const { annotations } = useAnnotationStore();
+  const { filePath, originalBytes, setIsDirty, setOriginalBytes } = usePdfStore();
+  const { annotations, clearAnnotations } = useAnnotationStore();
 
   const save = useCallback(async (targetPath?: string): Promise<boolean> => {
     const path = targetPath ?? filePath;
@@ -14,13 +14,15 @@ export function useSavePdf() {
     try {
       const newBytes = await embedAnnotationsAndSave(originalBytes, annotations);
       await invoke("save_pdf", { path, bytes: Array.from(newBytes) });
+      setOriginalBytes(newBytes);
+      clearAnnotations();
       setIsDirty(false);
       return true;
     } catch (err) {
       console.error("Save failed:", err);
       return false;
     }
-  }, [filePath, originalBytes, annotations, setIsDirty]);
+  }, [filePath, originalBytes, annotations, setIsDirty, setOriginalBytes, clearAnnotations]);
 
   const saveAs = useCallback(async (): Promise<boolean> => {
     if (!originalBytes) return false;
