@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "screenshot": "node scripts/screenshots.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
@@ -16,6 +17,7 @@
     "@tauri-apps/plugin-fs": "^2",
     "i18next": "^24.2.3",
     "i18next-browser-languagedetector": "^8.0.5",
+    "lucide-react": "^1.16.0",
     "nanoid": "^5.1.5",
     "pdfjs-dist": "^4.10.38",
     "react": "^19.1.0",
@@ -24,6 +26,7 @@
     "zustand": "^5.0.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tauri-apps/cli": "^2",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
