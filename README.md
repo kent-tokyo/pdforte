@@ -89,6 +89,7 @@ A fast, lightweight PDF viewer and editor built with Tauri v2, React, and PDF.js
 - **Callout** — text box with draggable arrow pointing to target position
 - **Comments** — right-click any annotation → "Edit comment" to attach a text note; previewed in the annotation list
 - **Right-click context menu** — right-click selected text to copy; right-click annotation to delete or edit comment
+- **Smart placement** — when placing a text box, background color, font size, and font family are auto-detected from the surrounding PDF content
 - **Undo / Redo** — Ctrl+Z / Ctrl+Y (unlimited history)
 - **Annotation list panel** — sidebar tab showing all annotations with comment previews, click to navigate
 - **Property panel** — edit color, size, opacity for selected annotation
