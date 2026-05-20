@@ -167,7 +167,7 @@ export function TextBoxAnnotation({ annotation, screenPos, viewport, isSelected 
         top: rect.top,
         width: Math.max(rect.width, 40),
         height: Math.max(rect.height, 8),
-        background: annotation.bgColor || "rgba(255,255,200,0.85)",
+        background: annotation.bgColor || "transparent",
         cursor: "move",
         userSelect: "none",
         boxShadow: isSelected ? "0 0 0 2px rgba(20,115,230,0.25)" : "none",
