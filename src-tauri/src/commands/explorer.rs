@@ -1,13 +1,7 @@
 use serde::Serialize;
 use std::path::Path;
 
-/// S2: reject paths containing '..' to prevent arbitrary directory enumeration
-fn validate_path(path: &str) -> Result<(), String> {
-    if Path::new(path).components().any(|c| matches!(c, std::path::Component::ParentDir)) {
-        return Err("Invalid path: '..' is not allowed".to_string());
-    }
-    Ok(())
-}
+use super::validate_path;
 
 #[derive(Serialize)]
 pub struct FileEntry {

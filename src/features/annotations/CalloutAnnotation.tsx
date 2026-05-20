@@ -26,7 +26,7 @@ function nearestEdgePoint(box: ScreenRect, tx: number, ty: number) {
 }
 
 export function CalloutAnnotation({ annotation, screenPos, viewport, isSelected }: Props) {
-  const { updateAnnotation, deleteAnnotation, setSelectedId } = useAnnotationActions();
+  const { updateAnnotation, updateAnnotationSilent, deleteAnnotation, setSelectedId } = useAnnotationActions();
   const [rect, setRect] = useState<ScreenRect>(screenPos);
   const [tailScreen, setTailScreen] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
@@ -200,7 +200,8 @@ export function CalloutAnnotation({ annotation, screenPos, viewport, isSelected 
               value={annotation.fontSize}
               min={6}
               max={72}
-              onChange={(e) => updateAnnotation(annotation.id, { fontSize: parseInt(e.target.value) || 12 })}
+              onChange={(e) => updateAnnotationSilent(annotation.id, { fontSize: parseInt(e.target.value) || 12 })}
+              onBlur={(e) => updateAnnotation(annotation.id, { fontSize: parseInt(e.target.value) || 12 })}
               onPointerDown={(e) => e.stopPropagation()}
               style={{ width: 36, fontSize: 10, background: "rgba(255,255,255,0.2)", border: "none", color: "#fff", textAlign: "center", borderRadius: 2 }}
               title="フォントサイズ"
@@ -210,7 +211,8 @@ export function CalloutAnnotation({ annotation, screenPos, viewport, isSelected 
 
         <textarea
           value={annotation.content}
-          onChange={(e) => updateAnnotation(annotation.id, { content: e.target.value })}
+          onChange={(e) => updateAnnotationSilent(annotation.id, { content: e.target.value })}
+          onBlur={() => updateAnnotation(annotation.id, { content: annotation.content })}
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
           placeholder="吹き出しテキスト..."

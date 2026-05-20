@@ -1,5 +1,7 @@
 use harumi::Document;
 
+use super::with_doc;
+
 // ── Annotation baking helpers ─────────────────────────────────────────────────
 
 fn hex_to_rgb(hex: &str) -> [f32; 3] {
@@ -566,7 +568,10 @@ pub async fn add_watermark_pdf(
 
             // Font
             if !res.has(b"Font") { res.set("Font", Object::Dictionary(Dictionary::new())); }
-            res.get_mut(b"Font").unwrap().as_dict_mut().unwrap()
+            res.get_mut(b"Font")
+                .map_err(|e| format!("Font key error: {e}"))?
+                .as_dict_mut()
+                .map_err(|e| format!("Font dict error: {e}"))?
                 .set("WmFont", Object::Reference(font_id));
 
             // ExtGState
@@ -574,7 +579,10 @@ pub async fn add_watermark_pdf(
             let mut gs_d = Dictionary::new();
             gs_d.set("ca", Object::Real(opacity));
             gs_d.set("CA", Object::Real(opacity));
-            res.get_mut(b"ExtGState").unwrap().as_dict_mut().unwrap()
+            res.get_mut(b"ExtGState")
+                .map_err(|e| format!("ExtGState key error: {e}"))?
+                .as_dict_mut()
+                .map_err(|e| format!("ExtGState dict error: {e}"))?
                 .set("WmGS", Object::Dictionary(gs_d));
         }
 
@@ -614,7 +622,6 @@ pub async fn add_header_footer_pdf(
     options: HeaderFooterOptions,
 ) -> Result<Vec<u8>, String> {
     use tauri::Manager;
-    let mut doc = Document::from_bytes(&bytes).map_err(|e| e.to_string())?;
     let fonts_dir = app
         .path()
         .resource_dir()
@@ -624,44 +631,45 @@ pub async fn add_header_footer_pdf(
 
     let font_bytes = load_font_bytes_for_lang(&fonts_dir, "en")
         .ok_or_else(|| "フォントが見つかりません。src-tauri/fonts/ にフォントをインストールしてください。".to_string())?;
-    let font = doc.embed_font(&font_bytes).map_err(|e| e.to_string())?;
 
-    let color = hex_to_rgb(&options.color);
-    let total = doc.page_count();
+    with_doc(&bytes, |doc| {
+        let font = doc.embed_font(&font_bytes).map_err(|e| e.to_string())?;
+        let color = hex_to_rgb(&options.color);
+        let total = doc.page_count();
 
-    let page_nums: Vec<u32> = options.pages.clone().unwrap_or_else(|| (1..=total).collect());
+        let page_nums: Vec<u32> = options.pages.clone().unwrap_or_else(|| (1..=total).collect());
 
-    for page_num in page_nums {
-        if page_num < 1 || page_num > total { continue; }
+        for page_num in page_nums {
+            if page_num < 1 || page_num > total { continue; }
 
-        let (pw, ph) = doc.page(page_num)
-            .and_then(|p| p.size())
-            .unwrap_or((595.28, 841.89));
+            let (pw, ph) = doc.page(page_num)
+                .and_then(|p| p.size())
+                .unwrap_or((595.28, 841.89));
 
-        let text = options.text
-            .replace("{n}", &page_num.to_string())
-            .replace("{total}", &total.to_string());
+            let text = options.text
+                .replace("{n}", &page_num.to_string())
+                .replace("{total}", &total.to_string());
 
-        // Estimate text width (0.55 * font_size * nchars)
-        let text_w = text.chars().count() as f32 * options.font_size * 0.55;
+            // Estimate text width (0.55 * font_size * nchars)
+            let text_w = text.chars().count() as f32 * options.font_size * 0.55;
 
-        let y = if options.position.starts_with("top") {
-            ph - options.margin - options.font_size
-        } else {
-            options.margin
-        };
-        let x = if options.position.ends_with("left") {
-            options.margin
-        } else if options.position.ends_with("right") {
-            (pw - options.margin - text_w).max(options.margin)
-        } else {
-            ((pw - text_w) / 2.0).max(options.margin)
-        };
+            let y = if options.position.starts_with("top") {
+                ph - options.margin - options.font_size
+            } else {
+                options.margin
+            };
+            let x = if options.position.ends_with("left") {
+                options.margin
+            } else if options.position.ends_with("right") {
+                (pw - options.margin - text_w).max(options.margin)
+            } else {
+                ((pw - text_w) / 2.0).max(options.margin)
+            };
 
-        if let Ok(mut page) = doc.page(page_num) {
-            let _ = page.add_text_with_opacity(&text, font, [x, y], options.font_size, color, 1.0);
+            if let Ok(mut page) = doc.page(page_num) {
+                let _ = page.add_text_with_opacity(&text, font, [x, y], options.font_size, color, 1.0);
+            }
         }
-    }
-
-    doc.save_to_bytes().map_err(|e| e.to_string())
+        Ok(())
+    })
 }

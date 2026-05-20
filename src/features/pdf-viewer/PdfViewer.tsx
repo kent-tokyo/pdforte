@@ -67,7 +67,7 @@ export function PdfViewer() {
       const containerRect = container.getBoundingClientRect();
       if (rect.bottom > containerRect.top - 200 && rect.top < containerRect.bottom + 200) {
         visible.add(i);
-        if (rect.top < containerRect.bottom / 2) {
+        if (rect.top < (containerRect.top + containerRect.bottom) / 2) {
           setCurrentPage(i + 1);
         }
       }

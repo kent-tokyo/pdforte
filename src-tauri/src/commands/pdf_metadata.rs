@@ -1,5 +1,7 @@
 use harumi::{Document, PdfMetadata};
 
+use super::with_doc;
+
 // ── Shared data types ─────────────────────────────────────────────────────────
 
 #[derive(serde::Serialize, serde::Deserialize, Default, Debug)]
@@ -35,16 +37,16 @@ pub async fn get_pdf_metadata(bytes: Vec<u8>) -> Result<MetadataPayload, String>
 
 #[tauri::command]
 pub async fn set_pdf_metadata(bytes: Vec<u8>, meta: MetadataPayload) -> Result<Vec<u8>, String> {
-    let mut doc = Document::from_bytes(&bytes).map_err(|e| e.to_string())?;
-    doc.set_metadata(&PdfMetadata {
-        title: meta.title,
-        author: meta.author,
-        subject: meta.subject,
-        keywords: meta.keywords,
-        creator: meta.creator,
+    with_doc(&bytes, |doc| {
+        doc.set_metadata(&PdfMetadata {
+            title: meta.title,
+            author: meta.author,
+            subject: meta.subject,
+            keywords: meta.keywords,
+            creator: meta.creator,
+        })
+        .map_err(|e| e.to_string())
     })
-    .map_err(|e| e.to_string())?;
-    doc.save_to_bytes().map_err(|e| e.to_string())
 }
 
 // ── Sanitize ──────────────────────────────────────────────────────────────────

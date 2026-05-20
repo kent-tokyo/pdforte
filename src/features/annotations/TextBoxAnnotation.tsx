@@ -37,7 +37,7 @@ interface Props {
 }
 
 export function TextBoxAnnotation({ annotation, screenPos, viewport, isSelected }: Props) {
-  const { updateAnnotation, deleteAnnotation, setSelectedId } = useAnnotationActions();
+  const { updateAnnotation, updateAnnotationSilent, deleteAnnotation, setSelectedId } = useAnnotationActions();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [rect, setRect] = useState<ScreenRect>(screenPos);
 
@@ -214,7 +214,8 @@ export function TextBoxAnnotation({ annotation, screenPos, viewport, isSelected 
             type="number"
             value={annotation.fontSize}
             min={6} max={144}
-            onChange={(e) => updateAnnotation(annotation.id, { fontSize: parseInt(e.target.value) || 12 })}
+            onChange={(e) => updateAnnotationSilent(annotation.id, { fontSize: parseInt(e.target.value) || 12 })}
+            onBlur={(e) => updateAnnotation(annotation.id, { fontSize: parseInt(e.target.value) || 12 })}
             onPointerDown={(e) => e.stopPropagation()}
             title="フォントサイズ"
             style={{ width: 36, fontSize: 10, background: "rgba(255,255,255,0.15)", border: "none", color: "#fff", textAlign: "center", borderRadius: 2, padding: "1px 2px" }}
@@ -268,7 +269,8 @@ export function TextBoxAnnotation({ annotation, screenPos, viewport, isSelected 
       <textarea
         ref={textareaRef}
         value={annotation.content}
-        onChange={(e) => updateAnnotation(annotation.id, { content: e.target.value })}
+        onChange={(e) => updateAnnotationSilent(annotation.id, { content: e.target.value })}
+        onBlur={() => updateAnnotation(annotation.id, { content: annotation.content })}
         onKeyDown={handleTextareaKeyDown}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}

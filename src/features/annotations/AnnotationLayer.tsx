@@ -129,7 +129,9 @@ export function AnnotationLayer({ pageIndex, viewport, pdfPage }: Props) {
 
   useEffect(() => {
     if (!pdfPage) return;
+    let cancelled = false;
     pdfPage.getTextContent().then((tc) => {
+      if (cancelled) return;
       textItemsRef.current = tc.items
         .filter((item): item is typeof item & { transform: number[]; fontName: string } =>
           "transform" in item)
@@ -140,7 +142,35 @@ export function AnnotationLayer({ pageIndex, viewport, pdfPage }: Props) {
           fontName: item.fontName as string,
         }));
     });
+    return () => { cancelled = true; };
   }, [pdfPage]);
+
+  const finalizePolygon = useCallback(() => {
+    setPolygonPts((pts) => {
+      if (!pts || pts.length < 3) return null;
+      const pdfPoints: [number, number][] = pts.map(([sx, sy]) => {
+        const [px, py] = viewport.convertToPdfPoint(sx, sy);
+        return [px, py];
+      });
+      const xs = pdfPoints.map(([x]) => x);
+      const ys = pdfPoints.map(([, y]) => y);
+      const minX = Math.min(...xs), maxX = Math.max(...xs);
+      const minY = Math.min(...ys), maxY = Math.max(...ys);
+      addAnnotation({
+        type: "shape",
+        shape: "polygon",
+        pageIndex,
+        pdfRect: { x: minX, y: minY, width: maxX - minX || 1, height: maxY - minY || 1 },
+        points: pdfPoints,
+        strokeColor: "#e34850",
+        fillColor: "",
+        strokeWidth: 2,
+        opacity: 1,
+      });
+      return null;
+    });
+    setPolygonCursor(null);
+  }, [viewport, pageIndex, addAnnotation]);
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -178,7 +208,7 @@ export function AnnotationLayer({ pageIndex, viewport, pdfPage }: Props) {
 
       dragStart.current = { x: px, y: py };
     },
-    [activeTool]
+    [activeTool, finalizePolygon]
   );
 
   const handlePointerMove = useCallback(
@@ -381,33 +411,6 @@ export function AnnotationLayer({ pageIndex, viewport, pdfPage }: Props) {
     },
     [activeTool, viewport, pageIndex, addAnnotation]
   );
-
-  const finalizePolygon = useCallback(() => {
-    setPolygonPts((pts) => {
-      if (!pts || pts.length < 3) return null;
-      const pdfPoints: [number, number][] = pts.map(([sx, sy]) => {
-        const [px, py] = viewport.convertToPdfPoint(sx, sy);
-        return [px, py];
-      });
-      const xs = pdfPoints.map(([x]) => x);
-      const ys = pdfPoints.map(([, y]) => y);
-      const minX = Math.min(...xs), maxX = Math.max(...xs);
-      const minY = Math.min(...ys), maxY = Math.max(...ys);
-      addAnnotation({
-        type: "shape",
-        shape: "polygon",
-        pageIndex,
-        pdfRect: { x: minX, y: minY, width: maxX - minX || 1, height: maxY - minY || 1 },
-        points: pdfPoints,
-        strokeColor: "#e34850",
-        fillColor: "",
-        strokeWidth: 2,
-        opacity: 1,
-      });
-      return null;
-    });
-    setPolygonCursor(null);
-  }, [viewport, pageIndex, addAnnotation]);
 
   // Cancel pencil/polygon/pending-image on tool switch
   useEffect(() => {

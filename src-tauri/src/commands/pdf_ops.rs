@@ -1,5 +1,7 @@
 use harumi::Document;
 
+use super::with_doc;
+
 // ── Page operations ───────────────────────────────────────────────────────────
 
 #[tauri::command]
@@ -28,29 +30,31 @@ pub async fn split_pdf(bytes: Vec<u8>, ranges: Vec<Vec<u32>>) -> Result<Vec<Vec<
 
 #[tauri::command]
 pub async fn rotate_pages_pdf(bytes: Vec<u8>, rotations: Vec<(u32, i32)>) -> Result<Vec<u8>, String> {
-    let mut doc = Document::from_bytes(&bytes).map_err(|e| e.to_string())?;
-    for (page, deg) in rotations {
-        doc.rotate_page(page, deg).map_err(|e| e.to_string())?;
-    }
-    doc.save_to_bytes().map_err(|e| e.to_string())
+    with_doc(&bytes, |doc| {
+        for (page, deg) in rotations {
+            doc.rotate_page(page, deg).map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    })
 }
 
 #[tauri::command]
 pub async fn reorder_pages_pdf(bytes: Vec<u8>, new_order: Vec<u32>) -> Result<Vec<u8>, String> {
-    let mut doc = Document::from_bytes(&bytes).map_err(|e| e.to_string())?;
-    doc.reorder_pages(&new_order).map_err(|e| e.to_string())?;
-    doc.save_to_bytes().map_err(|e| e.to_string())
+    with_doc(&bytes, |doc| {
+        doc.reorder_pages(&new_order).map_err(|e| e.to_string())
+    })
 }
 
 #[tauri::command]
 pub async fn delete_pages_pdf(bytes: Vec<u8>, mut pages: Vec<u32>) -> Result<Vec<u8>, String> {
-    let mut doc = Document::from_bytes(&bytes).map_err(|e| e.to_string())?;
     pages.sort_unstable_by(|a, b| b.cmp(a));
     pages.dedup();
-    for p in pages {
-        doc.remove_page(p).map_err(|e| e.to_string())?;
-    }
-    doc.save_to_bytes().map_err(|e| e.to_string())
+    with_doc(&bytes, |doc| {
+        for p in &pages {
+            doc.remove_page(*p).map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    })
 }
 
 // ── PDF generation ────────────────────────────────────────────────────────────
@@ -202,18 +206,16 @@ pub async fn extract_pages_pdf(bytes: Vec<u8>, pages: Vec<u32>) -> Result<Vec<u8
 /// the adjacent page; falls back to A4 if the document is empty or size lookup fails.
 #[tauri::command]
 pub async fn insert_blank_page_pdf(bytes: Vec<u8>, after: u32) -> Result<Vec<u8>, String> {
-    let mut doc = Document::from_bytes(&bytes).map_err(|e| e.to_string())?;
+    with_doc(&bytes, |doc| {
+        // Determine page size from adjacent page
+        let total = doc.page_count();
+        let ref_page = if after == 0 { 1 } else { after.min(total) };
+        let (pw, ph) = doc
+            .page(ref_page)
+            .ok()
+            .and_then(|p| p.size().ok())
+            .unwrap_or((595.28, 841.89)); // A4 fallback
 
-    // Determine page size from adjacent page
-    let total = doc.page_count();
-    let ref_page = if after == 0 { 1 } else { after.min(total) };
-    let (pw, ph) = doc
-        .page(ref_page)
-        .ok()
-        .and_then(|p| p.size().ok())
-        .unwrap_or((595.28, 841.89)); // A4 fallback
-
-    doc.insert_blank_page(after, (pw, ph))
-        .map_err(|e| e.to_string())?;
-    doc.save_to_bytes().map_err(|e| e.to_string())
+        doc.insert_blank_page(after, (pw, ph)).map_err(|e| e.to_string())
+    })
 }

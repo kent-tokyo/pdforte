@@ -1,13 +1,7 @@
 use std::path::Path;
 use serde::{Deserialize, Serialize};
 
-/// S1: reject paths containing '..' to prevent path traversal attacks
-fn validate_path(path: &str) -> Result<(), String> {
-    if Path::new(path).components().any(|c| matches!(c, std::path::Component::ParentDir)) {
-        return Err("Invalid path: '..' is not allowed".to_string());
-    }
-    Ok(())
-}
+use super::validate_path;
 
 #[derive(Serialize)]
 pub struct OpenPdfResult {

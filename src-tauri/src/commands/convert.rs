@@ -2,6 +2,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use serde::Serialize;
 
+use super::validate_path;
+
 const ALLOWED_LO_FORMATS: &[&str] = &["docx", "xlsx", "pptx", "pdf", "odt", "ods", "odp", "txt", "csv"];
 
 fn temp_path(prefix: &str, ext: &str) -> PathBuf {
@@ -89,6 +91,8 @@ pub async fn convert_via_libreoffice(
     format: String,
     output_dir: String,
 ) -> Result<String, String> {
+    validate_path(&input_path)?;
+    validate_path(&output_dir)?;
     // S3: validate format against allowlist to prevent LibreOffice filter-chain abuse
     let base_format = format.split(':').next().unwrap_or(&format);
     if !ALLOWED_LO_FORMATS.contains(&base_format) {
@@ -148,11 +152,13 @@ pub async fn ocr_page(image_bytes: Vec<u8>, lang: String) -> Result<String, Stri
         }),
     )
     .await
-    .map_err(|_| "Tesseract タイムアウト (120秒)".to_string())?
-    .map_err(|e| format!("spawn_blocking error: {}", e))?;
+    .map_err(|_| "Tesseract タイムアウト (120秒)".to_string())
+    .and_then(|r| r.map_err(|e| format!("spawn_blocking error: {}", e)));
 
+    // Always clean up input image, even on timeout or JoinError
     let _ = std::fs::remove_file(&tmp_img);
-    let status = run_result?;
+
+    let status = run_result??;
 
     if !status.success() {
         let _ = std::fs::remove_file(&tmp_txt);
@@ -189,11 +195,13 @@ pub async fn ocr_page_to_pdf(image_bytes: Vec<u8>, lang: String) -> Result<Vec<u
         }),
     )
     .await
-    .map_err(|_| "Tesseract タイムアウト (120秒)".to_string())?
-    .map_err(|e| format!("spawn_blocking error: {}", e))?;
+    .map_err(|_| "Tesseract タイムアウト (120秒)".to_string())
+    .and_then(|r| r.map_err(|e| format!("spawn_blocking error: {}", e)));
 
+    // Always clean up input image, even on timeout or JoinError
     let _ = std::fs::remove_file(&tmp_img);
-    let status = run_result?;
+
+    let status = run_result??;
 
     if !status.success() {
         let _ = std::fs::remove_file(&tmp_pdf);
@@ -207,11 +215,13 @@ pub async fn ocr_page_to_pdf(image_bytes: Vec<u8>, lang: String) -> Result<Vec<u
 
 #[tauri::command]
 pub async fn read_file_bytes(path: String) -> Result<Vec<u8>, String> {
+    validate_path(&path)?;
     std::fs::read(&path).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub async fn save_bytes(path: String, bytes: Vec<u8>) -> Result<(), String> {
+    validate_path(&path)?;
     std::fs::write(&path, bytes).map_err(|e| e.to_string())
 }
 
@@ -251,11 +261,14 @@ pub async fn protect_pdf(
             .map_err(|e| format!("qpdf が見つかりません。`brew install qpdf` でインストールしてください。({})", e))
     })
     .await
-    .map_err(|e| format!("spawn_blocking error: {}", e))?;
+    .map_err(|e| format!("spawn_blocking error: {}", e))
+    .and_then(|r| r);
 
+    // Always remove argfile (contains passwords) regardless of spawn_blocking success
     let _ = std::fs::remove_file(&argfile_path);
 
-    if run_result?.success() { Ok(()) } else { Err("qpdf による暗号化に失敗しました".to_string()) }
+    let status = run_result?;
+    if status.success() { Ok(()) } else { Err("qpdf による暗号化に失敗しました".to_string()) }
 }
 
 #[tauri::command]
