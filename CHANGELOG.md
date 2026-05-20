@@ -15,6 +15,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Text box default background changed from yellow to white (`rgba(255,255,255,0.9)`)
 - reqwest upgraded 0.12 → 0.13 (`rustls-tls` feature renamed to `rustls`)
 
+### Security
+- `validate_path` now canonicalizes the path and enforces `starts_with(HOME | temp_dir)` confinement — previously only rejected literal `..` components, leaving absolute paths and symlink escapes unguarded
+- `read_file_bytes` and `save_bytes` commands now call `validate_path` before accessing the filesystem
+- `convert_via_libreoffice` now validates `input_path` and `output_dir`
+- `protect_pdf` argfile (containing passwords) is now always deleted, including on timeout and JoinError paths
+
+### Fixed
+- Polygon annotations placed after zooming were baked with wrong PDF coordinates (stale `finalizePolygon` closure)
+- OCR temporary image files were not deleted when Tesseract timed out or `spawn_blocking` failed
+- `getTextContent()` effect now guards against stale font data being written after a component re-renders due to zoom
+- Current-page detection formula corrected (`containerRect.bottom / 2` → `(containerRect.top + containerRect.bottom) / 2`)
+- Watermark command no longer panics on PDFs where Font/ExtGState resources are stored as indirect references (Ghostscript, Acrobat)
+
+### Performance / Refactoring
+- Annotation store: `idToPage` reverse map makes `findPage` O(1) instead of O(pages × annotations)
+- `updateAnnotationSilent` prevents one undo snapshot per keystroke in text boxes; undo checkpoint is committed on blur
+- Rust: shared `validate_path` and `with_doc` helpers centralised in `commands/mod.rs`
+
 ---
 
 ## [0.2.1] — 2025-05-xx
