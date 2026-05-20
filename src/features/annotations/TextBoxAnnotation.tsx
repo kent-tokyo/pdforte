@@ -167,7 +167,7 @@ export function TextBoxAnnotation({ annotation, screenPos, viewport, isSelected 
         top: rect.top,
         width: Math.max(rect.width, 40),
         height: Math.max(rect.height, 8),
-        background: annotation.bgColor || "transparent",
+        background: annotation.bgColor || "rgba(255,255,255,0.9)",
         cursor: "move",
         userSelect: "none",
         boxShadow: isSelected ? "0 0 0 2px rgba(20,115,230,0.25)" : "none",
@@ -255,6 +255,13 @@ export function TextBoxAnnotation({ annotation, screenPos, viewport, isSelected 
               style={{ width: 18, height: 16, border: "none", padding: 0, background: "transparent", cursor: "pointer" }}
             />
           </label>
+          {annotation.bgColor && (
+            <button
+              onClick={(e) => { e.stopPropagation(); updateAnnotation(annotation.id, { bgColor: "" }); }}
+              title="背景色をクリア"
+              style={{ ...miniBtnStyle, fontSize: 9, opacity: 0.8 }}
+            >✕bg</button>
+          )}
         </div>
       )}
 
