@@ -215,21 +215,21 @@ Open the settings UI via the Settings button in the toolbar.
 ## AI Translation
 
 1. Open a PDF
-2. Go to **Tools menu → PDFを翻訳**
+2. Go to **Tools menu → Translate PDF**
 3. Select target language and page range
 4. Enter your API key in Settings if not already set
-5. Click **翻訳開始**
+5. Click **Start Translation**
 
 Translation results are inserted as TextBox annotations overlaying the original text positions.
 Supported engines: **DeepL**, **OpenAI GPT-4o-mini**, **Claude Haiku**.
 
 ## PDF Scanner
 
-1. Go to **Tools menu → PDFスキャナー**
-2. Add images (JPEG/PNG) with the **＋ 画像を追加** button
-3. Reorder images with ↑↓ buttons
+1. Go to **Tools menu → PDF Scanner**
+2. Add images (JPEG/PNG) with the **+ Add Images** button
+3. Reorder images with the ↑↓ buttons
 4. Choose paper size (original / A4 / Letter)
-5. Click **PDFを作成** and choose save location
+5. Click **Create PDF** and choose save location
 
 ## Annotation Export / Import
 

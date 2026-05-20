@@ -1,6 +1,6 @@
 [package]
 name = "pdforte"
-version = "0.1.0"
+version = "0.2.1"
 description = "A lightweight PDF viewer and editor"
 authors = ["pdforte Contributors"]
 edition = "2021"
